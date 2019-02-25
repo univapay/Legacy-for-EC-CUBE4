@@ -1,0 +1,6 @@
+# パラメータ定義
+#parameters:
+  # upc_payment.xxx: 1
+
+# コンテナ定義
+#services:
