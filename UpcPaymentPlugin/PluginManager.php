@@ -148,6 +148,9 @@ class PluginManager extends AbstractPluginManager
         $Config->setApiId('api-id');
         $Config->setApiPassword('api-password');
         $Config->setApiUrl('https://payment.example/com');
+        $Config->setCreditJob('0');
+        $Config->setUseCvv('0');
+        $Config->setUseSplit('0');
 
         $entityManager->persist($Config);
         $entityManager->flush($Config);

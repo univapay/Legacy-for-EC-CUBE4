@@ -24,12 +24,12 @@ trait OrderTrait
     /**
      * トークンを保持するカラム.
      *
-     * dtb_order.upc_payment_token
+     * dtb_order.upc_payment_plugin_token
      *
      * @var string
      * @ORM\Column(type="string", nullable=true)
      */
-    private $upc_payment_token;
+    private $upc_payment_plugin_token;
 
     /**
      * クレジットカード番号の末尾4桁.
@@ -93,17 +93,17 @@ trait OrderTrait
      */
     public function getUpcPaymentPluginToken()
     {
-        return $this->upc_payment_token;
+        return $this->upc_payment_plugin_token;
     }
 
     /**
-     * @param string $upc_payment_token
+     * @param string $upc_payment_plugin_token
      *
      * @return $this
      */
-    public function setUpcPaymentPluginToken($upc_payment_token)
+    public function setUpcPaymentPluginToken($upc_payment_plugin_token)
     {
-        $this->upc_payment_token = $upc_payment_token;
+        $this->upc_payment_plugin_token = $upc_payment_plugin_token;
 
         return $this;
     }

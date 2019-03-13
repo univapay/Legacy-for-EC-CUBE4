@@ -57,6 +57,33 @@ file that was distributed with this source code.
                                     {{ form_errors(form.api_password) }}
                                 </div>
                             </div>
+                            <div class="row">
+                                <div class="col-3"><span>{{ 'upc_payment.admin.config.credit_job'|trans }}</span><span
+                                            class="badge badge-primary ml-1"></span>
+                                </div>
+                                <div class="col mb-2">
+                                    {{ form_widget(form.credit_job) }}
+                                    {{ form_errors(form.credit_job) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3"><span>{{ 'upc_payment.admin.config.use_cvv'|trans }}</span><span
+                                            class="badge badge-primary ml-1"></span>
+                                </div>
+                                <div class="col mb-2">
+                                    {{ form_widget(form.use_cvv) }}
+                                    {{ form_errors(form.use_cvv) }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-3"><span>{{ 'upc_payment.admin.config.use_split'|trans }}</span><span
+                                            class="badge badge-primary ml-1"></span>
+                                </div>
+                                <div class="col mb-2">
+                                    {{ form_widget(form.use_split) }}
+                                    {{ form_errors(form.use_split) }}
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

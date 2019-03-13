@@ -54,6 +54,28 @@ class Config
     private $api_password;
 
     /**
+     * @var string
+     *
+     * @ORM\Column(name="credit_job", type="string", length=255)
+     */
+    private $credit_job;
+
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="use_cvv", type="string", length=255)
+     */
+    private $use_cvv;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="use_split", type="string", length=255)
+     */
+    private $use_split;
+
+    /**
      * @return int
      */
     public function getId()
@@ -120,4 +142,66 @@ class Config
 
         return $this;
     }
+
+    /**
+     * @return string
+     */
+    public function getCreditJob()
+    {
+        return $this->credit_job;
+    }
+
+    /**
+     * @param string $credit_job
+     *
+     * @return $this
+     */
+    public function setCreditJob($credit_job)
+    {
+        $this->credit_job = $credit_job;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUseCvv()
+    {
+        return $this->use_cvv;
+    }
+
+    /**
+     * @param string $use_cvv
+     *
+     * @return $this
+     */
+    public function setUseCvv($use_cvv)
+    {
+        $this->use_cvv = $use_cvv;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUseSplit()
+    {
+        return $this->use_split;
+    }
+
+    /**
+     * @param string $use_split
+     *
+     * @return $this
+     */
+    public function setUseSplit($use_split)
+    {
+        $this->use_split = $use_split;
+
+        return $this;
+    }
+
+
 }

@@ -17,8 +17,11 @@ upc_payment.admin.config.save: 登録
 upc_payment.admin.config.required: 必須
 upc_payment.admin.config.back: プラグイン一覧
 upc_payment.admin.config.api_url: API URL
-upc_payment.admin.config.api_id: API ID
+upc_payment.admin.config.api_id: 店舗ID
 upc_payment.admin.config.api_password: API パスワード
+upc_payment.admin.config.credit_job: クレジット決済ジョブ
+upc_payment.admin.config.use_cvv: CVVの入力欄表示
+upc_payment.admin.config.use_split: 国内分割の選択欄表示
 upc_payment.admin.order_edit.title: 決済情報
 upc_payment.admin.order_edit.cvs_title: コンビニ決済情報
 upc_payment.admin.order_edit.payment_status: 決済種別

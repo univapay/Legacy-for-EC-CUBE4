@@ -38,7 +38,7 @@ class ConfigController extends AbstractController
     }
 
     /**
-     * @Route("/%eccube_admin_route%/upc_payment_plugin/config", name="upc_payment_admin_config")
+     * @Route("/%eccube_admin_route%/upc_payment_plugin/config", name="upc_payment_plugin_admin_config")
      * @Template("@UpcPaymentPlugin/admin/config.twig")
      */
     public function index(Request $request)
@@ -54,7 +54,7 @@ class ConfigController extends AbstractController
 
             $this->addSuccess('upc_payment.admin.save.success', 'admin');
 
-            return $this->redirectToRoute('upc_payment_admin_config');
+            return $this->redirectToRoute('upc_payment_plugin_admin_config');
         }
 
         return [
