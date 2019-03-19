@@ -28,7 +28,7 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
- * クレジットカード(リンク式)の決済処理を行う
+ * Alipay(リンク式)の決済処理を行う
  */
 class Alipay implements PaymentMethodInterface
 {

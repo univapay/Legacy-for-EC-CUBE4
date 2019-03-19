@@ -24,6 +24,8 @@ use Eccube\Service\PurchaseFlow\PurchaseContext;
 use Eccube\Service\PurchaseFlow\PurchaseFlow;
 use Plugin\UpcPaymentPlugin\Entity\PaymentStatus;
 use Plugin\UpcPaymentPlugin\Repository\PaymentStatusRepository;
+use Plugin\UpcPaymentPlugin\entity\Config;
+use Plugin\UpcPaymentPlugin\Repository\ConfigRepository;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
@@ -63,15 +65,19 @@ class LinkCreditCard implements PaymentMethodInterface
      * @param OrderStatusRepository $orderStatusRepository
      * @param PaymentStatusRepository $paymentStatusRepository
      * @param PurchaseFlow $shoppingPurchaseFlow
+     * @param ConfigRepository $ConfigRepository
      */
+
     public function __construct(
         OrderStatusRepository $orderStatusRepository,
         PaymentStatusRepository $paymentStatusRepository,
-        PurchaseFlow $shoppingPurchaseFlow
+        PurchaseFlow $shoppingPurchaseFlow,
+        ConfigRepository $ConfigRepository
     ) {
         $this->orderStatusRepository = $orderStatusRepository;
         $this->paymentStatusRepository = $paymentStatusRepository;
         $this->purchaseFlow = $shoppingPurchaseFlow;
+        $this->configRepository = $ConfigRepository;
     }
 
     /**
@@ -96,7 +102,6 @@ class LinkCreditCard implements PaymentMethodInterface
      *
      * @return PaymentDispatcher
      *
-     * @throws ShoppingException
      */
     public function apply()
     {
@@ -107,16 +112,28 @@ class LinkCreditCard implements PaymentMethodInterface
         // 決済ステータスを未決済へ変更
         $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::OUTSTANDING);
         $this->Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
-        $Pid = "123456";
-        $this->Order->setUpcPaymentPluginPid($Pid);
+
+
+        // $Pid = "123456";
+        // $this->Order->setUpcPaymentPluginPid($Pid);
+
         // purchaseFlow::prepareを呼び出し, 購入処理を進める.
         $this->purchaseFlow->prepare($this->Order, new PurchaseContext());
 
+        //pluginconfigを呼び出す
+        $UpcPaymentPluginConfig = $this->configRepository->get();
+
         // 決済サーバのカード入力画面へリダイレクトする.
-        $url = 'https://gw.ccps.jp/payment.aspx?no=' . $this->Order->getOrderNo();
-        $url .= "&sid=103842&svid=1&ptype=8&job=CAPTURE&siam1=" . $this->Order->getTotalPrice();
+        $url = $UpcPaymentPluginConfig->getApiUrl() . '?no=' . $this->Order->getOrderNo();
+        $url .= "&sid=" . $UpcPaymentPluginConfig->getApiId();
+        $url .= "&svid=1&ptype=8";
+        $url .= "&job=";
+        $url .= $UpcPaymentPluginConfig->getCreditJob() == 0 ? "CAPTURE" : "AUTH";
+        $url .= "&siam1=" . $this->Order->getTotalPrice();
         $url .= "&em=" . $this->Order->getEmail();
         $url .= "&tn=" . $this->Order->getPhoneNumber();
+        $url .= "&sucd=p_return";
+
 
         $response = new RedirectResponse($url);
         $dispatcher = new PaymentDispatcher();

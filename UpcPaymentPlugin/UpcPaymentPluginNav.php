@@ -26,7 +26,7 @@ class UpcPaymentPluginNav implements EccubeNav
             'order' => [
                 'children' => [
                     'upc_payment_plugin_admin_payment_status' => [
-                        'name' => 'upc_payment.admin.nav.payment_list',
+                        'name' => 'upc_payment_plugin.admin.nav.payment_list',
                         'url' => 'upc_payment_plugin_admin_payment_status',
                     ],
                 ],

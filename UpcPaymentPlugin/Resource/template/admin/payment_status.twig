@@ -12,8 +12,8 @@ file that was distributed with this source code.
 
 {% set menus = ['order', 'upc_payment_plugin_admin_payment_status'] %}
 
-{% block title %}{{ 'upc_payment.admin.payment_status.title'|trans }}{% endblock %}
-{% block sub_title %}{{ 'upc_payment.admin.payment_status.sub_title'|trans }}{% endblock %}
+{% block title %}{{ 'upc_payment_plugin.admin.payment_status.title'|trans }}{% endblock %}
+{% block sub_title %}{{ 'upc_payment_plugin.admin.payment_status.sub_title'|trans }}{% endblock %}
 
 {% form_theme searchForm '@admin/Form/bootstrap_4_layout.html.twig' %}
 
@@ -43,7 +43,7 @@ file that was distributed with this source code.
                 var value = $('#option_bulk_status').val();
                 if (!value) {
                     $(this).data('cancel', true);
-                    alert("{{ 'upc_payment.admin.payment_status.bulk_alert'|trans }}");
+                    alert("{{ 'upc_payment_plugin.admin.payment_status.bulk_alert'|trans }}");
                     return false;
                 }
                 $(this).data('cancel', false);
@@ -57,7 +57,7 @@ file that was distributed with this source code.
                     event.preventDefault();
 
                     if (!form.find('input:checkbox[name^="ids"]:checked').length) {
-                        alert("{{ 'upc_payment.admin.payment_status.bulk_alert'|trans }}");
+                        alert("{{ 'upc_payment_plugin.admin.payment_status.bulk_alert'|trans }}");
                         return false;
                     }
 
@@ -92,7 +92,7 @@ file that was distributed with this source code.
                     <div class="col-12">
                         <div class="form-row">
                             <div class="form-group col-12">
-                                <p class="col-form-label">{{ 'upc_payment.admin.payment_status.search_condition_payment'|trans }}</p>
+                                <p class="col-form-label">{{ 'upc_payment_plugin.admin.payment_status.search_condition_payment'|trans }}</p>
                                 {{ form_widget(searchForm.Payments, {'label_attr': {'class': 'checkbox-inline'}}) }}
                                 {{ form_errors(searchForm.Payments) }}
                             </div>
@@ -103,7 +103,7 @@ file that was distributed with this source code.
                     <div class="col-12">
                         <div class="form-row">
                             <div class="form-group col-12">
-                                <p class="col-form-label">{{ 'upc_payment.admin.payment_status.search_condition_order_status'|trans }}</p>
+                                <p class="col-form-label">{{ 'upc_payment_plugin.admin.payment_status.search_condition_order_status'|trans }}</p>
                                 {{ form_widget(searchForm.OrderStatuses, {'label_attr': {'class': 'checkbox-inline'}}) }}
                                 {{ form_errors(searchForm.OrderStatuses) }}
                             </div>
@@ -114,7 +114,7 @@ file that was distributed with this source code.
                     <div class="col-12">
                         <div class="form-row">
                             <div class="form-group col-12">
-                                <p class="col-form-label">{{ 'upc_payment.admin.payment_status.search_condition_payment_status'|trans }}</p>
+                                <p class="col-form-label">{{ 'upc_payment_plugin.admin.payment_status.search_condition_payment_status'|trans }}</p>
                                 {{ form_widget(searchForm.PaymentStatuses, {'label_attr': {'class': 'checkbox-inline'}}) }}
                                 {{ form_errors(searchForm.PaymentStatuses) }}
                             </div>
@@ -128,7 +128,7 @@ file that was distributed with this source code.
                         <div class="col-12">
                             <button class="btn btn-ec-conversion px-5" type="submit">検索</button>
                             {% if pagination %}
-                                <span class="font-weight-bold ml-2">{{ 'upc_payment.admin.payment_status.search_result_count'|trans({ '%count%': pagination.totalItemCount }) }}</span>
+                                <span class="font-weight-bold ml-2">{{ 'upc_payment_plugin.admin.payment_status.search_result_count'|trans({ '%count%': pagination.totalItemCount }) }}</span>
                             {% endif %}
                         </div>
                     </div>
@@ -147,23 +147,23 @@ file that was distributed with this source code.
                         <div class="modal-dialog" role="document">
                             <div class="modal-content">
                                 <div class="modal-header">
-                                    <h5 class="modal-title">{{ 'upc_payment.admin.payment_status.bulk_modal_title'|trans }}</h5>
+                                    <h5 class="modal-title">{{ 'upc_payment_plugin.admin.payment_status.bulk_modal_title'|trans }}</h5>
                                     <button class="close" type="button" data-dismiss="modal"
                                             aria-label="Close">
                                         <span aria-hidden="true">×</span>
                                     </button>
                                 </div>
                                 <div class="modal-body">
-                                    <p>{{ 'upc_payment.admin.payment_status.bulk_modal_body'|trans }}</p>
+                                    <p>{{ 'upc_payment_plugin.admin.payment_status.bulk_modal_body'|trans }}</p>
                                 </div>
                                 <div class="modal-footer">
                                     <button class="btn btn-ec-conversion" data-action="execute" type="button"
                                             data-dismiss="modal">
-                                        {{ 'upc_payment.admin.payment_status.bulk_modal_action_exec'|trans }}
+                                        {{ 'upc_payment_plugin.admin.payment_status.bulk_modal_action_exec'|trans }}
                                     </button>
                                     <button class="btn btn-ec-sub" data-action="cancel" type="button"
                                             data-dismiss="modal">
-                                        {{ 'upc_payment.admin.payment_status.bulk_modal_action_cancel'|trans }}
+                                        {{ 'upc_payment_plugin.admin.payment_status.bulk_modal_action_cancel'|trans }}
                                     </button>
                                 </div>
                             </div>
@@ -175,7 +175,7 @@ file that was distributed with this source code.
                             <div class="col-6">
                                 <div class="row justify-content-between">
                                     <div class="col-auto d-none btn-bulk-wrapper">
-                                        <label class="mr-2">{{ 'upc_payment.admin.payment_status.bulk_label'|trans }}</label>
+                                        <label class="mr-2">{{ 'upc_payment_plugin.admin.payment_status.bulk_label'|trans }}</label>
                                         <div class="d-inline-block mr-2">
                                             <select class="custom-select" id="option_bulk_status">
                                             <option value="" selected>--</option>
@@ -185,7 +185,7 @@ file that was distributed with this source code.
                                             </select>
                                         </div>
                                         <button id="btn_bulk_status" class="btn btn-ec-regular mr-2" data-submit="bulk" data-confirm="true">
-                                            {{ 'upc_payment.admin.payment_status.bulk_submit'|trans }}
+                                            {{ 'upc_payment_plugin.admin.payment_status.bulk_submit'|trans }}
                                         </button>
                                     </div>
                                 </div>
@@ -196,7 +196,7 @@ file that was distributed with this source code.
                                         {% for pageMax in pageMaxis %}
                                             <option {% if pageMax.name == page_count%} selected {% endif %}
                                                     value="{{ path('upc_payment_plugin_admin_payment_status', {'page_no': 1, 'page_count': pageMax.name}) }}">
-                                                {{ 'upc_payment.admin.payment_status.display_count'|trans({ '%count%': pageMax.name|e }) }}</option>
+                                                {{ 'upc_payment_plugin.admin.payment_status.display_count'|trans({ '%count%': pageMax.name|e }) }}</option>
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -210,12 +210,12 @@ file that was distributed with this source code.
                                         <th class="border-top-0 pt-2 pb-2 text-center pl-3">
                                             <input type="checkbox" id="check_all" name="filter" value="open">
                                         </th>
-                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment.admin.payment_status.col_order_date'|trans }}</th>
-                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment.admin.payment_status.col_order_no'|trans }}</th>
-                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment.admin.payment_status.col_order_name'|trans }}</th>
-                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment.admin.payment_status.col_order_payment'|trans }}</th>
-                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment.admin.payment_status.col_order_price'|trans }}</th>
-                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment.admin.payment_status.col_order_staus'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment_plugin.admin.payment_status.col_order_date'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment_plugin.admin.payment_status.col_order_no'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment_plugin.admin.payment_status.col_order_name'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment_plugin.admin.payment_status.col_order_payment'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment_plugin.admin.payment_status.col_order_price'|trans }}</th>
+                                        <th class="border-top-0 pt-2 pb-2 text-center">{{ 'upc_payment_plugin.admin.payment_status.col_order_staus'|trans }}</th>
                                     </tr>
                                     </thead>
                                     <tbody>
@@ -249,15 +249,15 @@ file that was distributed with this source code.
                 {% elseif has_errors %}
                     <div class="card rounded border-0">
                         <div class="card-body p-4">
-                            <div class="text-center text-muted mb-4 h5">{{ 'upc_payment.admin.payment_status.invalid_condition'|trans }}</div>
-                            <div class="text-center text-muted">{{ 'upc_payment.admin.payment_status.change_condition'|trans }}</div>
+                            <div class="text-center text-muted mb-4 h5">{{ 'upc_payment_plugin.admin.payment_status.invalid_condition'|trans }}</div>
+                            <div class="text-center text-muted">{{ 'upc_payment_plugin.admin.payment_status.change_condition'|trans }}</div>
                         </div>
                     </div>
                 {% else %}
                     <div class="card rounded border-0">
                         <div class="card-body p-4">
-                            <div class="text-center text-muted mb-4 h5">{{ 'upc_payment.admin.payment_status.no_result'|trans }}</div>
-                            <div class="text-center text-muted">{{ 'upc_payment.admin.payment_status.change_condition'|trans }}</div>
+                            <div class="text-center text-muted mb-4 h5">{{ 'upc_payment_plugin.admin.payment_status.no_result'|trans }}</div>
+                            <div class="text-center text-muted">{{ 'upc_payment_plugin.admin.payment_status.change_condition'|trans }}</div>
                         </div>
                     </div>
                 {% endif %}

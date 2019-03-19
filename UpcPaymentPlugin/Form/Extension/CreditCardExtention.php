@@ -17,6 +17,8 @@ use Eccube\Entity\Order;
 use Eccube\Form\Type\Shopping\OrderType;
 use Eccube\Repository\PaymentRepository;
 use Plugin\UpcPaymentPlugin\Service\Method\CreditCard;
+use Plugin\UpcPaymentPlugin\Entity\Config;
+use Plugin\UpcPaymentPlugin\Repository\ConfigRepository;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -34,9 +36,15 @@ class CreditCardExtention extends AbstractTypeExtension
      */
     protected $paymentRepository;
 
-    public function __construct(PaymentRepository $paymentRepository)
+    /**
+     * @var ConfigRepository $UpcPaymentPluginConfig
+     */
+    protected $UpcPaymentPluginConfig;
+
+    public function __construct(PaymentRepository $paymentRepository, ConfigRepository $UpcPaymentPluginConfig)
     {
         $this->paymentRepository = $paymentRepository;
+        $this->Config = $UpcPaymentPluginConfig;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -65,6 +73,9 @@ class CreditCardExtention extends AbstractTypeExtension
             $Order = $event->getForm()->getData();
             $Order->getPayment()->getId();
         });
+
+        $UpcPaymentPluginConfig =$this->Config->get();
+        //$UpcPaymentPluginConfig->getUseCvv();
     }
 
     /**

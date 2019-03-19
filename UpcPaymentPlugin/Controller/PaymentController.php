@@ -144,7 +144,7 @@ class PaymentController extends AbstractController
     /**
      * 完了画面へ遷移する.
      *
-     * @Route("/upc_payment_complete", name="upc_payment_complete")
+     * @Route("/upc_payment_plugin_complete", name="upc_payment_plugin_complete")
      */
     public function complete(Request $request)
     {
@@ -179,19 +179,59 @@ class PaymentController extends AbstractController
     {
         // 決済会社から受注番号を受け取る
         $orderNo = $request->get('no');
-        $Order = $this->getOrderByNo($orderNo);
-
+        // $Order = $this->getOrderByNo($orderNo);
+        /** @var Order $Order */
+        $Order = $this->orderRepository->findOneBy([
+            'order_no' => $orderNo,
+        ]);
         if (!$Order) {
             throw new NotFoundHttpException();
         }
+        //決済失敗の場合はエラーにする
+        $rst = $request->get('rst');
+        if ($rst != 1) {
+            throw new NotFoundHttpException();
+        }
 
-        // 受注ステータスを新規受付へ変更
-        $OrderStatus = $this->orderStatusRepository->find(OrderStatus::NEW);
-        $Order->setOrderStatus($OrderStatus);
+        /*ジョブによる処理の切り分け。
+        *
+        * auth PaymentStatus::PROVISIONAL_SALES
+        * sales PaymentStatus::ACTUAL_SALES
+        * capture PaymentStatus::ACTUAL_SALES
+        *
+        */
+        $kbJob = $request->get('job');
+        echo $kbJob;
+        if ($kbJob == "AUTH"){
+          // 決済ステータスを仮売上へ変更
+          $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::PROVISIONAL_SALES);
+          $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+          // 受注ステータスを入金済みへ変更
+          $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
+          echo $OrderStatus;
+          $Order->setOrderStatus($OrderStatus);
+        }elseif ($kbJob == "CAPTURE"){
+          // 決済ステータスを実売上へ変更
+          $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::ACTUAL_SALES);
+          $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+          // 受注ステータスを入金済みへ変更
+          $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
+          echo $OrderStatus;
+          $Order->setOrderStatus($OrderStatus);
+        }elseif ($kbJob == "SALES"){
+          // 決済ステータスを実売上へ変更
+          $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::ACTUAL_SALES);
+          $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
 
-        // 決済ステータスを仮売上へ変更
-        $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::PROVISIONAL_SALES);
-        $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+        }elseif ($kbJob == "CANCEL") {
+          // 決済ステータスをキャンセルへ変更
+          $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
+          $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+        }
+        dump($Order);
+        //決済番号を保存
+        $pid = $request->get('pid');
+        $Order->setUpcPaymentPluginPid($pid);
 
         // 注文完了メールにメッセージを追加
         $Order->appendCompleteMailMessage('');
