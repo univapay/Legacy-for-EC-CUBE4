@@ -113,10 +113,6 @@ class LinkCreditCard implements PaymentMethodInterface
         $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::OUTSTANDING);
         $this->Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
 
-
-        // $Pid = "123456";
-        // $this->Order->setUpcPaymentPluginPid($Pid);
-
         // purchaseFlow::prepareを呼び出し, 購入処理を進める.
         $this->purchaseFlow->prepare($this->Order, new PurchaseContext());
 

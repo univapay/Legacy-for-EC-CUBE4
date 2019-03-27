@@ -30,13 +30,14 @@ class PluginManager extends AbstractPluginManager
 {
     public function enable(array $meta, ContainerInterface $container)
     {
-        $this->createTokenPayment($container);
+        // $this->createTokenPayment($container);
         $this->createLinkPayment($container);
-        $this->createCvsPayment($container);
+        // $this->createCvsPayment($container);
         $this->createConfig($container);
         $this->createPaymentStatuses($container);
         $this->createCvsPaymentStatuses($container);
         $this->createCvsTypes($container);
+        $this->createAlipayPayment($container);
     }
 
     private function createTokenPayment(ContainerInterface $container)
@@ -56,7 +57,7 @@ class PluginManager extends AbstractPluginManager
         $Payment->setCharge(0);
         $Payment->setSortNo($sortNo);
         $Payment->setVisible(true);
-        $Payment->setMethod('サンプル決済(トークン)'); // todo nameでいいんじゃないか
+        $Payment->setMethod('クレジット決済(トークン)'); // todo nameでいいんじゃないか
         $Payment->setMethodClass(CreditCard::class);
 
         $entityManager->persist($Payment);
@@ -80,7 +81,7 @@ class PluginManager extends AbstractPluginManager
         $Payment->setCharge(0);
         $Payment->setSortNo($sortNo);
         $Payment->setVisible(true);
-        $Payment->setMethod('サンプル決済(リンク)'); // todo nameでいいんじゃないか
+        $Payment->setMethod('クレジット決済'); // todo nameでいいんじゃないか
         $Payment->setMethodClass(LinkCreditCard::class);
 
         $entityManager->persist($Payment);
@@ -145,9 +146,9 @@ class PluginManager extends AbstractPluginManager
         }
 
         $Config = new Config();
-        $Config->setApiId('api-id');
+        $Config->setApiId('shop-id');
         $Config->setApiPassword('api-password');
-        $Config->setApiUrl('https://payment.example/com');
+        $Config->setApiUrl('https://gw.ccps.jp/payment.aspx');
         $Config->setCreditJob('0');
         $Config->setUseCvv('0');
         $Config->setUseSplit('0');

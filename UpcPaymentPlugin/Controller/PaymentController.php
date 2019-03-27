@@ -28,6 +28,8 @@ use Plugin\UpcPaymentPlugin\Entity\CvsPaymentStatus;
 use Plugin\UpcPaymentPlugin\Repository\PaymentStatusRepository;
 use Plugin\UpcPaymentPlugin\Repository\CvsPaymentStatusRepository;
 use Plugin\UpcPaymentPlugin\Service\Method\Convenience;
+use Plugin\UpcPaymentPlugin\entity\Config;
+use Plugin\UpcPaymentPlugin\Repository\ConfigRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -94,7 +96,8 @@ class PaymentController extends AbstractController
         CvsPaymentStatusRepository $cvsPaymentStatusRepository,
         PurchaseFlow $shoppingPurchaseFlow,
         CartService $cartService,
-        OrderStateMachine $orderStateMachine
+        OrderStateMachine $orderStateMachine,
+        ConfigRepository $ConfigRepository
     ) {
         $this->orderRepository = $orderRepository;
         $this->orderStatusRepository = $orderStatusRepository;
@@ -103,6 +106,7 @@ class PaymentController extends AbstractController
         $this->purchaseFlow = $shoppingPurchaseFlow;
         $this->cartService = $cartService;
         $this->orderStateMachine = $orderStateMachine;
+        $this->configRepository = $ConfigRepository;
     }
 
     /**
@@ -136,7 +140,7 @@ class PaymentController extends AbstractController
         // purchaseFlow::rollbackを呼び出し, 購入処理をロールバックする.
         $this->purchaseFlow->rollback($Order, new PurchaseContext());
 
-        $this->entityManager->flush();
+        // $this->entityManager->flush();
 
         return $this->redirectToRoute('shopping');
     }
@@ -177,7 +181,7 @@ class PaymentController extends AbstractController
      */
     public function receiveComplete(Request $request)
     {
-        // 決済会社から受注番号を受け取る
+        // 受注番号を受け取る
         $orderNo = $request->get('no');
         // $Order = $this->getOrderByNo($orderNo);
         /** @var Order $Order */
@@ -203,43 +207,56 @@ class PaymentController extends AbstractController
         $kbJob = $request->get('job');
         echo $kbJob;
         if ($kbJob == "AUTH"){
+          //注文日を設定
+          $Order->setOrderDate(new \DateTime());
           // 決済ステータスを仮売上へ変更
           $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::PROVISIONAL_SALES);
           $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
-          // 受注ステータスを入金済みへ変更
+          // 受注ステータス　入金済みを設定
           $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
-          echo $OrderStatus;
           $Order->setOrderStatus($OrderStatus);
+          //入金日を設定
+          $Order->setPaymentDate(new \DateTime());
         }elseif ($kbJob == "CAPTURE"){
+          //注文日を設定
+          $Order->setOrderDate(new \DateTime());
           // 決済ステータスを実売上へ変更
           $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::ACTUAL_SALES);
           $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
-          // 受注ステータスを入金済みへ変更
+          // 受注ステータス　入金済みを設定
           $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
-          echo $OrderStatus;
           $Order->setOrderStatus($OrderStatus);
+          //入金日を設定
+          $Order->setPaymentDate(new \DateTime());
         }elseif ($kbJob == "SALES"){
           // 決済ステータスを実売上へ変更
           $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::ACTUAL_SALES);
           $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
-
         }elseif ($kbJob == "CANCEL") {
-          // 決済ステータスをキャンセルへ変更
+          // 受注ステータス　入金済みを設定
           $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
           $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+          $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
+          $Order->setOrderStatus($OrderStatus);
         }
-        dump($Order);
+
+
         //決済番号を保存
         $pid = $request->get('pid');
         $Order->setUpcPaymentPluginPid($pid);
 
+
         // 注文完了メールにメッセージを追加
         $Order->appendCompleteMailMessage('');
 
-        // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
-        $this->purchaseFlow->commit($Order, new PurchaseContext());
 
-        $this->entityManager->flush();
+        // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
+        // $this->purchaseFlow->commit($Order, new PurchaseContext());
+
+        // $this->entityManager->flush();
+
+        $this->entityManager->persist($Order);
+        $this->entityManager->flush($Order);
 
         return new Response('OK!!');
     }

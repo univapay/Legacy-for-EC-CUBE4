@@ -6,7 +6,10 @@ upc_payment_plugin.admin.save.success: 登録しました。
 upc_payment_plugin.admin.save.failed: 登録に失敗しました。
 upc_payment_plugin.admin.order.cancel.success: 取消処理を行いました。
 upc_payment_plugin.admin.order.cancel.failed: 取消処理が失敗しました。
-upc_payment_plugin.admin.order.change_price.success: 取消処理を行いました。
+upc_payment_plugin.admin.order.cancel.executed: 取消処理済みです。
+upc_payment_plugin.admin.order.change_sales.success: 実売処理を行いました。
+upc_payment_plugin.admin.order.change_sales.failed: 実売に失敗しました。
+upc_payment_plugin.admin.order.change_sales.error: 実売は仮売のみ可能です。
 upc_payment_plugin.admin.payment_status.bulk_action.success: %count%件を処理しました。
 
 # twig
@@ -29,7 +32,7 @@ upc_payment_plugin.admin.order_edit.cvs_payment_status: コンビニ決済状況
 upc_payment_plugin.admin.order_edit.cvs_type: コンビニ種別
 upc_payment_plugin.admin.order_edit.payment_action: 決済操作
 upc_payment_plugin.admin.order_edit.payment_action_cancel: 取消実行
-upc_payment_plugin.admin.order_edit.payment_action_change_price: 金額変更
+upc_payment_plugin.admin.order_edit.payment_action_change_sales: 実売実行
 upc_payment_plugin.admin.payment_status.title: 決済状況一覧
 upc_payment_plugin.admin.payment_status.sub_title: 受注管理
 upc_payment_plugin.admin.payment_status.search: 検索

@@ -52,7 +52,7 @@ class ConfigController extends AbstractController
             $this->entityManager->persist($Config);
             $this->entityManager->flush($Config);
 
-            $this->addSuccess('upc_payment.admin.save.success', 'admin');
+            $this->addSuccess('upc_payment_plugin.admin.save.success', 'admin');
 
             return $this->redirectToRoute('upc_payment_plugin_admin_config');
         }

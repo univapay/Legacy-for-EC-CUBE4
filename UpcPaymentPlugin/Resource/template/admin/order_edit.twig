@@ -16,11 +16,11 @@
         });
 
         // キャンセル処理実行
-        $('#upc_payment-action__change_price').on('click', function () {
+        $('#upc_payment-action__change_sales').on('click', function () {
             $('#upc_payment-info__body button').prop('disabled', true);
             $.ajax({
                 type: 'POST',
-                url: '{{ url('upc_payment_plugin_admin_order_change_price', { id: Order.id }) }}',
+                url: '{{ url('upc_payment_plugin_admin_order_change_sales', { id: Order.id }) }}',
             }).always(function () {
                 location.href = location.href;
             });
@@ -49,8 +49,6 @@
                     <div class="col-2"><span>決済番号</span></div>
                     <div class="col">
                         {{ Order.upc_payment_plugin_pid }}
-                        {{ dump(Order) }}
-
                     </div>
                 </div>
                 <div class="row mb-2">
@@ -63,9 +61,9 @@
                                 </button>
                             </li>
                             <li class="list-inline-item">
-                                <button id="upc_payment-action__change_price" type="button"
+                                <button id="upc_payment-action__change_sales" type="button"
                                         class="btn btn-ec-regular px-5">
-                                    {{ 'upc_payment_plugin.admin.order_edit.payment_action_change_price'|trans }}
+                                    {{ 'upc_payment_plugin.admin.order_edit.payment_action_change_sales'|trans }}
                                 </button>
                             </li>
                         </ul>
@@ -74,6 +72,7 @@
             </div>
         </div>
     </div>
+    {#
     <div id="upc_payment-cvsinfo" class="card rounded border-0 mb-4">
         <div class="card-header">
             <div class="row">
@@ -108,4 +107,5 @@
             </div>
         </div>
     </div>
+    #}
 </div>
