@@ -37,7 +37,7 @@ class PluginManager extends AbstractPluginManager
         $this->createPaymentStatuses($container);
         $this->createCvsPaymentStatuses($container);
         $this->createCvsTypes($container);
-        $this->createAlipayPayment($container);
+        // $this->createAlipayPayment($container);
     }
 
     private function createTokenPayment(ContainerInterface $container)

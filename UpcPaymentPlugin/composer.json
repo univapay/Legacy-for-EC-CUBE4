@@ -7,6 +7,6 @@
     "code": "UpcPaymentPlugin"
   },
   "require": {
-    "ec-cube/plugin-installer": "~0.0.4"
+    "ec-cube/plugin-installer": "~0.0.6"
   }
 }
