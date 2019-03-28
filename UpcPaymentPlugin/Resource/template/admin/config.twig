@@ -48,6 +48,7 @@ file that was distributed with this source code.
                                     {{ form_errors(form.api_id) }}
                                 </div>
                             </div>
+                            {# 現在利用しないためコメントアウト
                             <div class="row">
                                 <div class="col-3"><span>{{ 'upc_payment_plugin.admin.config.api_password'|trans }}</span><span
                                             class="badge badge-primary ml-1">{{ 'upc_payment_plugin.admin.config.required'|trans }}</span>
@@ -57,6 +58,10 @@ file that was distributed with this source code.
                                     {{ form_errors(form.api_password) }}
                                 </div>
                             </div>
+                            #}
+                            {{ form_widget(form.api_password,{ type : 'hidden' }) }}
+                            {{ form_widget(form.use_cvv,{ type : 'hidden' }) }}
+                            {{ form_widget(form.use_split,{ type : 'hidden' }) }}
                             <div class="row">
                                 <div class="col-3"><span>{{ 'upc_payment_plugin.admin.config.credit_job'|trans }}</span><span
                                             class="badge badge-primary ml-1"></span>
@@ -66,6 +71,7 @@ file that was distributed with this source code.
                                     {{ form_errors(form.credit_job) }}
                                 </div>
                             </div>
+                            {# 現在利用しないためコメントアウト
                             <div class="row">
                                 <div class="col-3"><span>{{ 'upc_payment_plugin.admin.config.use_cvv'|trans }}</span><span
                                             class="badge badge-primary ml-1"></span>
@@ -85,6 +91,8 @@ file that was distributed with this source code.
                                 </div>
                             </div>
                         </div>
+                        #}
+
                     </div>
                 </div>
             </div>

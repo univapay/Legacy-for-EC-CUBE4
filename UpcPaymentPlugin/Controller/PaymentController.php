@@ -37,6 +37,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+use Eccube\Service\MailService;
+
+
 /**
  * リンク式決済の注文/戻る/完了通知を処理する.
  */
@@ -77,6 +80,10 @@ class PaymentController extends AbstractController
      */
     protected $orderStateMachine;
 
+    /**
+     * @var MailService
+     */
+    protected $mailService;
 
     /**
      * PaymentController constructor.
@@ -97,6 +104,7 @@ class PaymentController extends AbstractController
         PurchaseFlow $shoppingPurchaseFlow,
         CartService $cartService,
         OrderStateMachine $orderStateMachine,
+        MailService $mailService,
         ConfigRepository $ConfigRepository
     ) {
         $this->orderRepository = $orderRepository;
@@ -106,6 +114,7 @@ class PaymentController extends AbstractController
         $this->purchaseFlow = $shoppingPurchaseFlow;
         $this->cartService = $cartService;
         $this->orderStateMachine = $orderStateMachine;
+        $this->mailService = $mailService;
         $this->configRepository = $ConfigRepository;
     }
 
@@ -248,6 +257,12 @@ class PaymentController extends AbstractController
 
         // 注文完了メールにメッセージを追加
         $Order->appendCompleteMailMessage('');
+
+
+        // メール送信
+        log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+        $this->mailService->sendOrderMail($Order);
+        $this->entityManager->flush();
 
 
         // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
