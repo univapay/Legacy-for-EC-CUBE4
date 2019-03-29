@@ -242,7 +242,7 @@ class PaymentController extends AbstractController
           $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::ACTUAL_SALES);
           $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
         }elseif ($kbJob == "CANCEL") {
-          // 受注ステータス　入金済みを設定
+          // 受注ステータス　キャンセルを設定
           $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
           $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
           $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
@@ -259,10 +259,12 @@ class PaymentController extends AbstractController
         $Order->appendCompleteMailMessage('');
 
 
-        // メール送信
-        log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
-        $this->mailService->sendOrderMail($Order);
-        $this->entityManager->flush();
+        // メール送信 AUTHとCAPTUREのときのみ
+        if ($kbJob == "AUTH" || $kbJob == "CAPTURE") {
+          log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+          $this->mailService->sendOrderMail($Order);
+          $this->entityManager->flush();
+        }
 
 
         // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
