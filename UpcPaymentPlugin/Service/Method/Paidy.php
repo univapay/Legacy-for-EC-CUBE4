@@ -30,9 +30,9 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
- * Alipay(リンク式)の決済処理を行う
+ * Paidyの決済処理を行う
  */
-class Alipay implements PaymentMethodInterface
+class Paidy implements PaymentMethodInterface
 {
     /**
      * @var Order
@@ -121,14 +121,13 @@ class Alipay implements PaymentMethodInterface
         // 決済サーバのカード入力画面へリダイレクトする.
         $url = $UpcPaymentPluginConfig->getApiUrl() . '?no=' . $this->Order->getOrderNo();
         $url .= "&sid=" . $UpcPaymentPluginConfig->getApiId();
-        $url .= "&svid=6&ptype=1";
-        $url .= "&job=REQUEST";
+        $url .= "&svid=25&ptype=8";
+        $url .= "&job=AUTH";
         $url .= "&siam1=" . $this->Order->getTotalPrice();
         $url .= "&em=" . $this->Order->getEmail();
         $url .= "&tn=" . $this->Order->getPhoneNumber();
-        $url .= "&lang=cn";
+        $url .= "&pdcur=JPY";
         $url .= "&sucd=p_return";
-
 
         $response = new RedirectResponse($url);
         $dispatcher = new PaymentDispatcher();

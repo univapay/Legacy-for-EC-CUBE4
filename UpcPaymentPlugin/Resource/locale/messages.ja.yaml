@@ -7,6 +7,7 @@ upc_payment_plugin.admin.save.failed: 登録に失敗しました。
 upc_payment_plugin.admin.order.cancel.success: 取消処理を行いました。
 upc_payment_plugin.admin.order.cancel.failed: 取消処理が失敗しました。
 upc_payment_plugin.admin.order.cancel.executed: 取消処理済みです。
+upc_payment_plugin.admin.order.cancel.rejection: 取り消しができない支払い方法です。
 upc_payment_plugin.admin.order.change_sales.success: 実売処理を行いました。
 upc_payment_plugin.admin.order.change_sales.failed: 実売に失敗しました。
 upc_payment_plugin.admin.order.change_sales.error: 実売は仮売のみ可能です。

@@ -24,6 +24,11 @@ use Plugin\UpcPaymentPlugin\Repository\ConfigRepository;
 use Plugin\UpcPaymentPlugin\Entity\PaymentStatus;
 use Plugin\UpcPaymentPlugin\Repository\PaymentStatusRepository;
 
+use Plugin\UpcPaymentPlugin\Service\Method\LinkCreditCard;
+use Plugin\UpcPaymentPlugin\Service\Method\Alipay;
+use Plugin\UpcPaymentPlugin\Service\Method\Wechat;
+
+
 class OrderController extends AbstractController
 {
     /**
@@ -67,10 +72,36 @@ class OrderController extends AbstractController
               return $this->json([]);
             }
 
+            switch ($Order->getPayment()->getMethodClass()) {
+              // クレジット
+              case LinkCreditCard::class:
+                $svid = 1;
+                break;
+              // alipay
+              case Alipay::class:
+                $svid = 6;
+                break;
+              // wechat
+              case Wechat::class:
+                $svid = 23;
+                break;
+              //paidy gw処理未実装なためコメントアウト
+              // case Paidy::class:
+              //   $svid = 25;
+              //   break;
+              default:
+                $this->addError('upc_payment_plugin.admin.order.cancel.rejection', 'admin');
+                return $this->json([]);
+
+                break;
+            }
+
             //リクエストクエリ作成
             $url = $UpcPaymentPluginConfig->getApiUrl() . '?';
             $url .= "sid=" . $UpcPaymentPluginConfig->getApiId();
-            $url .= "&svid=1&ptype=1&rt=4";
+            $url .= "&svid=";
+            $url .= $svid;
+            $url .= "&ptype=1&rt=4";
             $url .= "&job=CANCEL";
             $url .= "&pid=" . $Order->getUpcPaymentPluginPid();
 
@@ -99,7 +130,7 @@ class OrderController extends AbstractController
     }
 
     /**
-     * 受注編集 > 決済の金額変更
+     * 受注編集 > クレジット決済の実売処理
      *
      * @Method("POST")
      * @Route("/%eccube_admin_route%/upc_payment_plugin/order/change_sales/{id}", requirements={"id" = "\d+"}, name="upc_payment_plugin_admin_order_change_sales")

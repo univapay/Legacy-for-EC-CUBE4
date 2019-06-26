@@ -22,6 +22,9 @@ use Plugin\UpcPaymentPlugin\Entity\CvsPaymentStatus;
 use Plugin\UpcPaymentPlugin\Entity\CvsType;
 use Plugin\UpcPaymentPlugin\Service\Method\LinkCreditCard;
 use Plugin\UpcPaymentPlugin\Service\Method\Alipay;
+use Plugin\UpcPaymentPlugin\Service\Method\Wechat;
+use Plugin\UpcPaymentPlugin\Service\Method\Paidy;
+use Plugin\UpcPaymentPlugin\Service\Method\Bank;
 use Plugin\UpcPaymentPlugin\Service\Method\Convenience;
 use Plugin\UpcPaymentPlugin\Service\Method\CreditCard;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -37,7 +40,10 @@ class PluginManager extends AbstractPluginManager
         $this->createPaymentStatuses($container);
         $this->createCvsPaymentStatuses($container);
         $this->createCvsTypes($container);
-        // $this->createAlipayPayment($container);
+        $this->createAlipayPayment($container);
+        $this->createWechatPayment($container);
+        $this->createPaidyPayment($container);
+        $this->createBankPayment($container);
     }
 
     private function createTokenPayment(ContainerInterface $container)
@@ -57,7 +63,7 @@ class PluginManager extends AbstractPluginManager
         $Payment->setCharge(0);
         $Payment->setSortNo($sortNo);
         $Payment->setVisible(true);
-        $Payment->setMethod('クレジット決済(トークン)'); // todo nameでいいんじゃないか
+        $Payment->setMethod('クレジット決済(トークン)');
         $Payment->setMethodClass(CreditCard::class);
 
         $entityManager->persist($Payment);
@@ -81,7 +87,7 @@ class PluginManager extends AbstractPluginManager
         $Payment->setCharge(0);
         $Payment->setSortNo($sortNo);
         $Payment->setVisible(true);
-        $Payment->setMethod('クレジット決済'); // todo nameでいいんじゃないか
+        $Payment->setMethod('クレジット決済');
         $Payment->setMethodClass(LinkCreditCard::class);
 
         $entityManager->persist($Payment);
@@ -105,13 +111,84 @@ class PluginManager extends AbstractPluginManager
         $Payment->setCharge(0);
         $Payment->setSortNo($sortNo);
         $Payment->setVisible(true);
-        $Payment->setMethod('Alipay'); // todo nameでいいんじゃないか
+        $Payment->setMethod('Alipay');
         $Payment->setMethodClass(Alipay::class);
 
         $entityManager->persist($Payment);
         $entityManager->flush($Payment);
     }
 
+    private function createWechatPayment(ContainerInterface $container)
+    {
+        $entityManager = $container->get('doctrine')->getManager();
+        $paymentRepository = $container->get(PaymentRepository::class);
+
+        $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
+        $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;
+
+        $Payment = $paymentRepository->findOneBy(['method_class' => Wechat::class]);
+        if ($Payment) {
+            return;
+        }
+
+        $Payment = new Payment();
+        $Payment->setCharge(0);
+        $Payment->setSortNo($sortNo);
+        $Payment->setVisible(true);
+        $Payment->setMethod('Wechat');
+        $Payment->setMethodClass(Wechat::class);
+
+        $entityManager->persist($Payment);
+        $entityManager->flush($Payment);
+    }
+
+    private function createPaidyPayment(ContainerInterface $container)
+    {
+        $entityManager = $container->get('doctrine')->getManager();
+        $paymentRepository = $container->get(PaymentRepository::class);
+
+        $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
+        $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;
+
+        $Payment = $paymentRepository->findOneBy(['method_class' => Paidy::class]);
+        if ($Payment) {
+            return;
+        }
+
+        $Payment = new Payment();
+        $Payment->setCharge(0);
+        $Payment->setSortNo($sortNo);
+        $Payment->setVisible(true);
+        $Payment->setMethod('Paidy');
+        $Payment->setMethodClass(Paidy::class);
+
+        $entityManager->persist($Payment);
+        $entityManager->flush($Payment);
+    }
+
+    private function createBankPayment(ContainerInterface $container)
+    {
+        $entityManager = $container->get('doctrine')->getManager();
+        $paymentRepository = $container->get(PaymentRepository::class);
+
+        $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
+        $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;
+
+        $Payment = $paymentRepository->findOneBy(['method_class' => Bank::class]);
+        if ($Payment) {
+            return;
+        }
+
+        $Payment = new Payment();
+        $Payment->setCharge(0);
+        $Payment->setSortNo($sortNo);
+        $Payment->setVisible(true);
+        $Payment->setMethod('オート銀振');
+        $Payment->setMethodClass(Bank::class);
+
+        $entityManager->persist($Payment);
+        $entityManager->flush($Payment);
+    }
 
     private function createCvsPayment(ContainerInterface $container)
     {
@@ -182,6 +259,11 @@ class PluginManager extends AbstractPluginManager
             PaymentStatus::PROVISIONAL_SALES => '仮売上',
             PaymentStatus::ACTUAL_SALES => '実売上',
             PaymentStatus::CANCEL => 'キャンセル',
+            PaymentStatus::REQUEST => '申込',
+            PaymentStatus::SALES => '売上',
+            PaymentStatus::EBPRERENTAL => '仮貸出',
+            PaymentStatus::EBRENTAL => '貸出',
+            PaymentStatus::EBTRANSFER => '入金',
         ];
         $this->createMasterData($container, $statuses, PaymentStatus::class);
     }

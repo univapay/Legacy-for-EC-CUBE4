@@ -30,9 +30,9 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
- * Alipay(リンク式)の決済処理を行う
+ * Wechatの決済処理を行う
  */
-class Alipay implements PaymentMethodInterface
+class Wechat implements PaymentMethodInterface
 {
     /**
      * @var Order
@@ -121,11 +121,12 @@ class Alipay implements PaymentMethodInterface
         // 決済サーバのカード入力画面へリダイレクトする.
         $url = $UpcPaymentPluginConfig->getApiUrl() . '?no=' . $this->Order->getOrderNo();
         $url .= "&sid=" . $UpcPaymentPluginConfig->getApiId();
-        $url .= "&svid=6&ptype=1";
+        $url .= "&svid=23&ptype=8";
         $url .= "&job=REQUEST";
         $url .= "&siam1=" . $this->Order->getTotalPrice();
         $url .= "&em=" . $this->Order->getEmail();
         $url .= "&tn=" . $this->Order->getPhoneNumber();
+        $url .= "&method=WEB";
         $url .= "&lang=cn";
         $url .= "&sucd=p_return";
 

@@ -48,4 +48,39 @@ class PaymentStatus extends AbstractMasterEntity
      * キャンセル
      */
     const CANCEL = 5;
+
+    /**
+     * 中国決済
+     */
+
+    /**
+     * 申し込み
+     */
+    const REQUEST = 6;
+
+    /**
+     * 売上
+     */
+    const SALES = 7;
+
+    /**
+     * オート銀振り
+     */
+
+    /**
+     * 仮貸出
+     */
+    const EBPRERENTAL = 8;
+
+    /**
+     * 貸出
+     */
+    const EBRENTAL = 9;
+
+    /**
+     * 入金完了
+     */
+    const EBTRANSFER = 10;
+
+
 }

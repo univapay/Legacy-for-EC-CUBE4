@@ -28,6 +28,7 @@ use Plugin\UpcPaymentPlugin\Entity\CvsPaymentStatus;
 use Plugin\UpcPaymentPlugin\Repository\PaymentStatusRepository;
 use Plugin\UpcPaymentPlugin\Repository\CvsPaymentStatusRepository;
 use Plugin\UpcPaymentPlugin\Service\Method\Convenience;
+use Plugin\UpcPaymentPlugin\Service\Method\Bank;
 use Plugin\UpcPaymentPlugin\entity\Config;
 use Plugin\UpcPaymentPlugin\Repository\ConfigRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -242,7 +243,7 @@ class PaymentController extends AbstractController
           $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::ACTUAL_SALES);
           $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
         }elseif ($kbJob == "CANCEL") {
-          // 受注ステータス　キャンセルを設定
+          // 受注ステータス　入金済みを設定
           $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
           $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
           $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
@@ -259,12 +260,10 @@ class PaymentController extends AbstractController
         $Order->appendCompleteMailMessage('');
 
 
-        // メール送信 AUTHとCAPTUREのときのみ
-        if ($kbJob == "AUTH" || $kbJob == "CAPTURE") {
-          log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
-          $this->mailService->sendOrderMail($Order);
-          $this->entityManager->flush();
-        }
+        // メール送信
+        log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+        $this->mailService->sendOrderMail($Order);
+        $this->entityManager->flush();
 
 
         // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
@@ -277,6 +276,287 @@ class PaymentController extends AbstractController
 
         return new Response('OK!!');
     }
+
+    /**
+     * 結果通知URLを受け取る(alipay).
+     *
+     * @Route("/upc_payment_plugin_receive_alipay", name="upc_payment_plugin_receive_alipay")
+     */
+    public function receiveAlipayStatus(Request $request)
+    {
+        // 決済会社から受注番号を受け取る
+        $orderNo = $request->get('no');
+        /** @var Order $Order */
+        $Order = $this->orderRepository->findOneBy([
+            'order_no' => $orderNo,
+        ]);
+
+        if (!$Order) {
+            throw new NotFoundHttpException();
+        }
+        //決済失敗の場合はエラーにする
+        $rst = $request->get('rst');
+        if ($rst != 1) {
+            throw new NotFoundHttpException();
+        }
+        //alipayの決済か確認
+        if ($Order->getPayment()->getMethodClass() !== Alipay::class) {
+            throw new BadRequestHttpException();
+        }
+
+        $kbJob = $request->get('job');
+        echo $kbJob;
+
+        switch ($kbjob) {
+            // 決済失敗
+            case "CANCEL":
+                // 受注ステータスをキャンセルへ変更
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
+                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
+                    $this->orderStateMachine->apply($Order, $OrderStatus);
+
+                    // 決済ステータスを決済失敗へ変更
+                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
+                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
+                } else {
+                    throw new BadRequestHttpException();
+                }
+
+                break;
+            // 決済完了
+            case "SALES":
+                // 受注ステータスを対応中へ変更
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
+                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
+                    $this->orderStateMachine->apply($Order, $OrderStatus);
+
+                    // 決済ステータスを決済完了へ変更
+                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
+                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
+                } else {
+                    throw new BadRequestHttpException();
+                }
+                break;
+            default:
+                break;
+
+        }
+
+        $this->entityManager->flush();
+
+        return new Response('OK!!');
+    }
+
+    /**
+     * 結果通知URLを受け取る(wechat).
+     *
+     * @Route("/upc_payment_plugin_receive_wechat", name="upc_payment_plugin_receive_wechat")
+     */
+    public function receiveWechatStatus(Request $request)
+    {
+        // 決済会社から受注番号を受け取る
+        $orderNo = $request->get('no');
+        /** @var Order $Order */
+        $Order = $this->orderRepository->findOneBy([
+            'order_no' => $orderNo,
+        ]);
+
+        if (!$Order) {
+            throw new NotFoundHttpException();
+        }
+        //決済失敗の場合はエラーにする
+        $rst = $request->get('rst');
+        if ($rst != 1) {
+            throw new NotFoundHttpException();
+        }
+        //wechatの決済確認
+        if ($Order->getPayment()->getMethodClass() !== Wechat::class) {
+            throw new BadRequestHttpException();
+        }
+
+        $kbJob = $request->get('job');
+        echo $kbJob;
+
+        switch ($kbjob) {
+            // 決済失敗
+            case "CANCEL":
+                // 受注ステータスをキャンセルへ変更
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
+                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
+                    $this->orderStateMachine->apply($Order, $OrderStatus);
+
+                    // 決済ステータスを決済失敗へ変更
+                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
+                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
+                } else {
+                    throw new BadRequestHttpException();
+                }
+
+                break;
+            // 決済完了
+            case "SALES":
+                // 受注ステータスを対応中へ変更
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
+                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
+                    $this->orderStateMachine->apply($Order, $OrderStatus);
+
+                    // 決済ステータスを決済完了へ変更
+                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
+                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
+                } else {
+                    throw new BadRequestHttpException();
+                }
+                break;
+            default:
+                break;
+
+        }
+
+        $this->entityManager->flush();
+
+        return new Response('OK!!');
+    }
+
+    /**
+     * 結果通知URLを受け取る(Paidy).
+     *
+     * @Route("/upc_payment_plugin_receive_paidy", name="upc_payment_plugin_receive_paidy")
+     */
+    public function receivePaidyStatus(Request $request)
+    {
+        // 決済会社から受注番号を受け取る
+        $orderNo = $request->get('no');
+        /** @var Order $Order */
+        $Order = $this->orderRepository->findOneBy([
+            'order_no' => $orderNo,
+        ]);
+
+        if (!$Order) {
+            throw new NotFoundHttpException();
+        }
+        //決済失敗の場合はエラーにする
+        $rst = $request->get('rst');
+        if ($rst != 1) {
+            throw new NotFoundHttpException();
+        }
+        //paidy決済の確認
+        if ($Order->getPayment()->getMethodClass() !== Paidy::class) {
+            throw new BadRequestHttpException();
+        }
+
+        $kbJob = $request->get('job');
+        echo $kbJob;
+
+        switch ($kbJob) {
+            // 決済失敗
+            case "CANCEL":
+                // 受注ステータスをキャンセルへ変更
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
+                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
+                    $this->orderStateMachine->apply($Order, $OrderStatus);
+
+                    // 決済ステータスを決済失敗へ変更
+                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
+                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
+                } else {
+                    throw new BadRequestHttpException();
+                }
+
+                break;
+            // 決済完了
+            case "SALES":
+                // 受注ステータスを対応中へ変更
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
+                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
+                    $this->orderStateMachine->apply($Order, $OrderStatus);
+
+                    // 決済ステータスを決済完了へ変更
+                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
+                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
+                } else {
+                    throw new BadRequestHttpException();
+                }
+                break;
+            default:
+                break;
+
+        }
+
+        $this->entityManager->flush();
+
+        return new Response('OK!!');
+    }
+
+    /**
+     * 結果通知URLを受け取る(bank).
+     *
+     * @Route("/upc_payment_plugin_receive_bank", name="upc_payment_plugin_receive_bank")
+     */
+    public function receiveBankStatus(Request $request)
+    {
+        // 決済会社から受注番号を受け取る
+        $orderNo = $request->get('no');
+        /** @var Order $Order */
+        $Order = $this->orderRepository->findOneBy([
+            'order_no' => $orderNo,
+        ]);
+
+        if (!$Order) {
+            throw new NotFoundHttpException();
+        }
+        //決済失敗の場合はエラーにする
+        $rst = $request->get('rst');
+        if ($rst == 2) {
+            throw new NotFoundHttpException();
+        }
+        //オート銀振り決済の確認
+        if ($Order->getPayment()->getMethodClass() !== Bank::class) {
+            throw new BadRequestHttpException();
+        }
+
+        $kbJob = $request->get('job');
+        echo $kbJob;
+
+        switch ($kbJob) {
+            case "EBPRERENTAL":
+                //注文日を設定
+                $Order->setOrderDate(new \DateTime());
+                // 決済ステータスを仮売上へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::EBPRERENTAL);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                // 受注ステータス　購入処理中を設定
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PROCESSING);
+                $Order->setOrderStatus($OrderStatus);
+                break;
+            case "EBRENTAL":
+                // 決済ステータスを対応中へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::EBRENTAL);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                // 受注ステータス　購入処理中を設定
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::IN_PROGRESS);
+                $Order->setOrderStatus($OrderStatus);
+                break;
+            case "EBTRANSFER":
+                // 決済ステータスを対応中へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::EBTRANSFER);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                // 受注ステータス　入金済みを設定
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::IN_PROGRESS);
+                $Order->setOrderStatus($OrderStatus);
+                break;
+
+            default:
+                break;
+
+        }
+
+        // $this->entityManager->flush();
+        $this->entityManager->persist($Order);
+        $this->entityManager->flush($Order);
+
+        return new Response('OK!!');
+    }
+
 
     /**
      * 結果通知URLを受け取る(コンビニ決済).
@@ -293,6 +573,11 @@ class PaymentController extends AbstractController
         ]);
 
         if (!$Order) {
+            throw new NotFoundHttpException();
+        }
+        //決済失敗の場合はエラーにする
+        $rst = $request->get('rst');
+        if ($rst != 1) {
             throw new NotFoundHttpException();
         }
 
