@@ -126,7 +126,7 @@ class Bank implements PaymentMethodInterface
         $url .= "&siam1=" . $this->Order->getTotalPrice();
         $url .= "&em=" . $this->Order->getEmail();
         $url .= "&tn=" . $this->Order->getPhoneNumber();
-        $url .= "&lang=cn";
+        $url .= "&lang=ja";
         $url .= "&sucd=p_return";
 
 
