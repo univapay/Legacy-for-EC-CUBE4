@@ -29,6 +29,9 @@ use Plugin\UpcPaymentPlugin\Repository\PaymentStatusRepository;
 use Plugin\UpcPaymentPlugin\Repository\CvsPaymentStatusRepository;
 use Plugin\UpcPaymentPlugin\Service\Method\Convenience;
 use Plugin\UpcPaymentPlugin\Service\Method\Bank;
+use Plugin\UpcPaymentPlugin\Service\Method\Alipay;
+use Plugin\UpcPaymentPlugin\Service\Method\Wechat;
+use Plugin\UpcPaymentPlugin\Service\Method\Paidy;
 use Plugin\UpcPaymentPlugin\entity\Config;
 use Plugin\UpcPaymentPlugin\Repository\ConfigRepository;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -217,33 +220,53 @@ class PaymentController extends AbstractController
         $kbJob = $request->get('job');
         echo $kbJob;
         if ($kbJob == "AUTH"){
-          //注文日を設定
-          $Order->setOrderDate(new \DateTime());
-          // 決済ステータスを仮売上へ変更
-          $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::PROVISIONAL_SALES);
-          $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
-          // 受注ステータス　入金済みを設定
-          $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
-          $Order->setOrderStatus($OrderStatus);
-          //入金日を設定
-          $Order->setPaymentDate(new \DateTime());
+            //注文日を設定
+            $Order->setOrderDate(new \DateTime());
+            // 決済ステータスを仮売上へ変更
+            $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::PROVISIONAL_SALES);
+            $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+            // 受注ステータス　入金済みを設定
+            $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
+            $Order->setOrderStatus($OrderStatus);
+            //入金日を設定
+            $Order->setPaymentDate(new \DateTime());
+
+            // 注文完了メールにメッセージを追加
+            $Order->appendCompleteMailMessage('');
+
+
+            // メール送信
+            log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+            $this->mailService->sendOrderMail($Order);
+            $this->entityManager->flush();
+
         }elseif ($kbJob == "CAPTURE"){
-          //注文日を設定
-          $Order->setOrderDate(new \DateTime());
-          // 決済ステータスを実売上へ変更
-          $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::ACTUAL_SALES);
-          $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
-          // 受注ステータス　入金済みを設定
-          $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
-          $Order->setOrderStatus($OrderStatus);
-          //入金日を設定
-          $Order->setPaymentDate(new \DateTime());
+            //注文日を設定
+            $Order->setOrderDate(new \DateTime());
+            // 決済ステータスを実売上へ変更
+            $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::ACTUAL_SALES);
+            $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+            // 受注ステータス　入金済みを設定
+            $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
+            $Order->setOrderStatus($OrderStatus);
+            //入金日を設定
+            $Order->setPaymentDate(new \DateTime());
+
+            // 注文完了メールにメッセージを追加
+            $Order->appendCompleteMailMessage('');
+
+
+            // メール送信
+            log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+            $this->mailService->sendOrderMail($Order);
+            $this->entityManager->flush();
+
         }elseif ($kbJob == "SALES"){
           // 決済ステータスを実売上へ変更
           $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::ACTUAL_SALES);
           $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
         }elseif ($kbJob == "CANCEL") {
-          // 受注ステータス　入金済みを設定
+          // 受注ステータス　取り消しを設定
           $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
           $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
           $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
@@ -256,14 +279,6 @@ class PaymentController extends AbstractController
         $Order->setUpcPaymentPluginPid($pid);
 
 
-        // 注文完了メールにメッセージを追加
-        $Order->appendCompleteMailMessage('');
-
-
-        // メール送信
-        log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
-        $this->mailService->sendOrderMail($Order);
-        $this->entityManager->flush();
 
 
         // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
@@ -307,40 +322,45 @@ class PaymentController extends AbstractController
         $kbJob = $request->get('job');
         echo $kbJob;
 
-        switch ($kbjob) {
+        switch ($kbJob) {
             // 決済失敗
             case "CANCEL":
-                // 受注ステータスをキャンセルへ変更
+                // 受注ステータス　取り消しを設定
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
                 $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
-                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
-                    $this->orderStateMachine->apply($Order, $OrderStatus);
-
-                    // 決済ステータスを決済失敗へ変更
-                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
-                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
-                } else {
-                    throw new BadRequestHttpException();
-                }
-
+                $Order->setOrderStatus($OrderStatus);
                 break;
             // 決済完了
             case "SALES":
-                // 受注ステータスを対応中へ変更
+                //注文日を設定
+                $Order->setOrderDate(new \DateTime());
+                // 決済ステータスを実売上へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                // 受注ステータス　入金済みを設定
                 $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
-                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
-                    $this->orderStateMachine->apply($Order, $OrderStatus);
+                $Order->setOrderStatus($OrderStatus);
+                //入金日を設定
+                $Order->setPaymentDate(new \DateTime());
 
-                    // 決済ステータスを決済完了へ変更
-                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
-                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
-                } else {
-                    throw new BadRequestHttpException();
-                }
+                // 注文完了メールにメッセージを追加
+                $Order->appendCompleteMailMessage('');
+
+
+                // メール送信
+                log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+                $this->mailService->sendOrderMail($Order);
+                $this->entityManager->flush();
+
+
                 break;
             default:
                 break;
-
         }
+        //決済番号を保存
+        $pid = $request->get('pid');
+        $Order->setUpcPaymentPluginPid($pid);
 
         $this->entityManager->flush();
 
@@ -377,40 +397,45 @@ class PaymentController extends AbstractController
         $kbJob = $request->get('job');
         echo $kbJob;
 
-        switch ($kbjob) {
+        switch ($kbJob) {
             // 決済失敗
             case "CANCEL":
-                // 受注ステータスをキャンセルへ変更
+                // 受注ステータス　取り消しを設定
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
                 $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
-                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
-                    $this->orderStateMachine->apply($Order, $OrderStatus);
-
-                    // 決済ステータスを決済失敗へ変更
-                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
-                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
-                } else {
-                    throw new BadRequestHttpException();
-                }
-
+                $Order->setOrderStatus($OrderStatus);
                 break;
             // 決済完了
             case "SALES":
-                // 受注ステータスを対応中へ変更
+                //注文日を設定
+                $Order->setOrderDate(new \DateTime());
+                // 決済ステータスを実売上へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                // 受注ステータス　入金済みを設定
                 $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
-                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
-                    $this->orderStateMachine->apply($Order, $OrderStatus);
+                $Order->setOrderStatus($OrderStatus);
+                //入金日を設定
+                $Order->setPaymentDate(new \DateTime());
 
-                    // 決済ステータスを決済完了へ変更
-                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
-                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
-                } else {
-                    throw new BadRequestHttpException();
-                }
+                // 注文完了メールにメッセージを追加
+                $Order->appendCompleteMailMessage('');
+
+
+                // メール送信
+                log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+                $this->mailService->sendOrderMail($Order);
+                $this->entityManager->flush();
+
                 break;
             default:
                 break;
 
         }
+        //決済番号を保存
+        $pid = $request->get('pid');
+        $Order->setUpcPaymentPluginPid($pid);
 
         $this->entityManager->flush();
 
@@ -448,39 +473,48 @@ class PaymentController extends AbstractController
         echo $kbJob;
 
         switch ($kbJob) {
-            // 決済失敗
+            // 決済取消
             case "CANCEL":
-                // 受注ステータスをキャンセルへ変更
+                // 受注ステータス　取り消しを設定
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
                 $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
-                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
-                    $this->orderStateMachine->apply($Order, $OrderStatus);
-
-                    // 決済ステータスを決済失敗へ変更
-                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
-                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
-                } else {
-                    throw new BadRequestHttpException();
-                }
-
+                $Order->setOrderStatus($OrderStatus);
                 break;
             // 決済完了
-            case "SALES":
-                // 受注ステータスを対応中へ変更
+            case "AUTH":
+                //注文日を設定
+                $Order->setOrderDate(new \DateTime());
+                // 決済ステータスを実売上へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                // 受注ステータス　入金済みを設定
                 $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
-                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
-                    $this->orderStateMachine->apply($Order, $OrderStatus);
+                $Order->setOrderStatus($OrderStatus);
+                //入金日を設定
+                $Order->setPaymentDate(new \DateTime());
 
-                    // 決済ステータスを決済完了へ変更
-                    $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
-                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
-                } else {
-                    throw new BadRequestHttpException();
-                }
+                // 注文完了メールにメッセージを追加
+                $Order->appendCompleteMailMessage('');
+
+
+                // メール送信
+                log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+                $this->mailService->sendOrderMail($Order);
+                $this->entityManager->flush();
+
+
+                break;
+            case "CAPTURE":
+                //実売り時の処理　必要であれば追加
                 break;
             default:
                 break;
 
         }
+        //決済番号を保存
+        $pid = $request->get('pid');
+        $Order->setUpcPaymentPluginPid($pid);
 
         $this->entityManager->flush();
 
@@ -527,6 +561,16 @@ class PaymentController extends AbstractController
                 // 受注ステータス　購入処理中を設定
                 $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PROCESSING);
                 $Order->setOrderStatus($OrderStatus);
+
+                // 注文完了メールにメッセージを追加
+                $Order->appendCompleteMailMessage('');
+
+
+                // メール送信
+                log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+                $this->mailService->sendOrderMail($Order);
+                $this->entityManager->flush();
+
                 break;
             case "EBRENTAL":
                 // 決済ステータスを対応中へ変更
@@ -541,14 +585,20 @@ class PaymentController extends AbstractController
                 $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::EBTRANSFER);
                 $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
                 // 受注ステータス　入金済みを設定
-                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::IN_PROGRESS);
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
                 $Order->setOrderStatus($OrderStatus);
+                //入金日を設定
+                $Order->setPaymentDate(new \DateTime());
+
                 break;
 
             default:
                 break;
 
         }
+        //決済番号を保存
+        $pid = $request->get('pid');
+        $Order->setUpcPaymentPluginPid($pid);
 
         // $this->entityManager->flush();
         $this->entityManager->persist($Order);
