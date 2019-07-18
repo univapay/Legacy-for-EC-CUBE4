@@ -5,6 +5,7 @@ upc_payment_plugin.admin.nav.payment_list: 決済状況一覧
 upc_payment_plugin.admin.save.success: 登録しました。
 upc_payment_plugin.admin.save.failed: 登録に失敗しました。
 upc_payment_plugin.admin.order.cancel.success: 取消処理を行いました。
+upc_payment_plugin.admin.order.cancel.request: 取消処理を実行しました。
 upc_payment_plugin.admin.order.cancel.failed: 取消処理が失敗しました。
 upc_payment_plugin.admin.order.cancel.executed: 取消処理済みです。
 upc_payment_plugin.admin.order.cancel.rejection: 取り消しができない支払い方法です。

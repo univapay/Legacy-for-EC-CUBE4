@@ -111,13 +111,14 @@ class OrderController extends AbstractController
             parse_str($rst, $rst_cancel);
             //結果取得
             if($rst_cancel['rst'] == 1){
-              // 決済ステータスを取消へ変更　キックバックでステータス変更を行うのでコメントアウト
-              // $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
-              // $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
-
-              $this->addSuccess('upc_payment_plugin.admin.order.cancel.success', 'admin');
+                // 決済ステータスを取消へ変更　キックバックでステータス変更を行うのでコメントアウト
+                // $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
+                // $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                $this->addSuccess('upc_payment_plugin.admin.order.cancel.success', 'admin');
+            }elseif($rst_cancel['rst'] == 0){
+                $this->addSuccess('upc_payment_plugin.admin.order.cancel.request', 'admin');
             }else{
-              $this->addError('upc_payment_plugin.admin.order.cancel.failed', 'admin');
+                $this->addError('upc_payment_plugin.admin.order.cancel.failed', 'admin');
             };
             //オーダー情報を更新
             $this->entityManager->persist($Order);

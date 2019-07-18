@@ -17,6 +17,7 @@ use Eccube\Controller\AbstractController;
 use Eccube\Entity\Master\OrderStatus;
 use Eccube\Entity\Order;
 use Eccube\Repository\Master\OrderStatusRepository;
+use Eccube\Repository\Master\CustomerOrderStatusRepository;
 use Eccube\Repository\OrderRepository;
 use Eccube\Service\CartService;
 use Eccube\Service\PurchaseFlow\PurchaseContext;
@@ -278,9 +279,6 @@ class PaymentController extends AbstractController
         $pid = $request->get('pid');
         $Order->setUpcPaymentPluginPid($pid);
 
-
-
-
         // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
         // $this->purchaseFlow->commit($Order, new PurchaseContext());
 
@@ -299,7 +297,7 @@ class PaymentController extends AbstractController
      */
     public function receiveAlipayStatus(Request $request)
     {
-        // 決済会社から受注番号を受け取る
+        // 受注番号を受け取る
         $orderNo = $request->get('no');
         /** @var Order $Order */
         $Order = $this->orderRepository->findOneBy([
@@ -374,7 +372,7 @@ class PaymentController extends AbstractController
      */
     public function receiveWechatStatus(Request $request)
     {
-        // 決済会社から受注番号を受け取る
+        // 受注番号を受け取る
         $orderNo = $request->get('no');
         /** @var Order $Order */
         $Order = $this->orderRepository->findOneBy([
@@ -449,7 +447,7 @@ class PaymentController extends AbstractController
      */
     public function receivePaidyStatus(Request $request)
     {
-        // 決済会社から受注番号を受け取る
+        // 受注番号を受け取る
         $orderNo = $request->get('no');
         /** @var Order $Order */
         $Order = $this->orderRepository->findOneBy([
@@ -474,7 +472,15 @@ class PaymentController extends AbstractController
 
         switch ($kbJob) {
             // 決済取消
-            case "CANCEL":
+            case "REFUND":
+                // 受注ステータス　取り消しを設定
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
+                $Order->setOrderStatus($OrderStatus);
+                break;
+            // 決済取消
+            case "CLOSE":
                 // 受注ステータス　取り消しを設定
                 $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
                 $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
@@ -485,8 +491,8 @@ class PaymentController extends AbstractController
             case "AUTH":
                 //注文日を設定
                 $Order->setOrderDate(new \DateTime());
-                // 決済ステータスを実売上へ変更
-                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
+                // 決済ステータスを仮売上へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::PROVISIONAL_SALES);
                 $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
                 // 受注ステータス　入金済みを設定
                 $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
@@ -503,10 +509,12 @@ class PaymentController extends AbstractController
                 $this->mailService->sendOrderMail($Order);
                 $this->entityManager->flush();
 
-
                 break;
             case "CAPTURE":
-                //実売り時の処理　必要であれば追加
+                //実売り時の処理
+                // 決済ステータスを仮売上へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
                 break;
             default:
                 break;
@@ -528,7 +536,7 @@ class PaymentController extends AbstractController
      */
     public function receiveBankStatus(Request $request)
     {
-        // 決済会社から受注番号を受け取る
+        // 受注番号を受け取る
         $orderNo = $request->get('no');
         /** @var Order $Order */
         $Order = $this->orderRepository->findOneBy([
@@ -555,16 +563,29 @@ class PaymentController extends AbstractController
             case "EBPRERENTAL":
                 //注文日を設定
                 $Order->setOrderDate(new \DateTime());
-                // 決済ステータスを仮売上へ変更
+                // 決済ステータスをEBPRERENTALへ変更
                 $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::EBPRERENTAL);
                 $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
-                // 受注ステータス　購入処理中を設定
-                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PROCESSING);
+                // 受注ステータス　決済処理中を設定
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PENDING);
                 $Order->setOrderStatus($OrderStatus);
+
+                break;
+            case "EBRENTAL":
+                // 決済ステータスを貸出へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::EBRENTAL);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                // 受注ステータス　新規注文を設定
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::NEW);
+                $Order->setOrderStatus($OrderStatus);
+
+                //会員オーダーステータスに注文未完了　8　を設定
+                // $CustomerOrderStatus = $this->CustomerOrderStatusRepository->find(name::8);
+                // $Order->setCustomerOrderStatus($CustomerOrderStatus);
+                // var_dump($Order);
 
                 // 注文完了メールにメッセージを追加
                 $Order->appendCompleteMailMessage('');
-
 
                 // メール送信
                 log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
@@ -572,21 +593,18 @@ class PaymentController extends AbstractController
                 $this->entityManager->flush();
 
                 break;
-            case "EBRENTAL":
-                // 決済ステータスを対応中へ変更
-                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::EBRENTAL);
-                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
-                // 受注ステータス　購入処理中を設定
-                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::IN_PROGRESS);
-                $Order->setOrderStatus($OrderStatus);
-                break;
             case "EBTRANSFER":
-                // 決済ステータスを対応中へ変更
+                // 決済ステータスを入金済みへ変更
                 $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::EBTRANSFER);
                 $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
-                // 受注ステータス　入金済みを設定
-                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
-                $Order->setOrderStatus($OrderStatus);
+                // 受注ステータス　rst=1は入金済みを設定 それ以外。超過不足の場合は新規受付を設定
+                if($rst != 1){
+                    $OrderStatus = $this->orderStatusRepository->find(OrderStatus::NEW);
+                    $Order->setOrderStatus($OrderStatus);
+                }else{
+                    $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
+                    $Order->setOrderStatus($OrderStatus);
+                }
                 //入金日を設定
                 $Order->setPaymentDate(new \DateTime());
 
@@ -615,7 +633,7 @@ class PaymentController extends AbstractController
      */
     public function receiveCvsStatus(Request $request)
     {
-        // 決済会社から受注番号を受け取る
+        // 受注番号を受け取る
         $orderNo = $request->get('no');
         /** @var Order $Order */
         $Order = $this->orderRepository->findOneBy([

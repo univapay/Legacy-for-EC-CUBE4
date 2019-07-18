@@ -7,23 +7,31 @@
         // 取消処理実行
         $('#upc_payment-action__cancel').on('click', function () {
             $('#upc_payment-info__body button').prop('disabled', true);
-            $.ajax({
-                type: 'POST',
-                url: '{{ url('upc_payment_plugin_admin_order_cancel', { id: Order.id }) }}',
-            }).always(function () {
-                location.href = location.href;
-            });
+            if(window.confirm('取消処理をおこないますか？')){
+                $.ajax({
+                    type: 'POST',
+                    url: '{{ url('upc_payment_plugin_admin_order_cancel', { id: Order.id }) }}',
+                }).always(function () {
+                    location.href = location.href;
+                });
+            }else{
+                $('#upc_payment-info__body button').prop('disabled', false);
+            }
         });
 
-        // キャンセル処理実行
+        // 実売処理実行
         $('#upc_payment-action__change_sales').on('click', function () {
             $('#upc_payment-info__body button').prop('disabled', true);
-            $.ajax({
-                type: 'POST',
-                url: '{{ url('upc_payment_plugin_admin_order_change_sales', { id: Order.id }) }}',
-            }).always(function () {
-                location.href = location.href;
-            });
+            if(window.confirm('実売処理をおこないますか？')){
+                $.ajax({
+                    type: 'POST',
+                    url: '{{ url('upc_payment_plugin_admin_order_change_sales', { id: Order.id }) }}',
+                }).always(function () {
+                    location.href = location.href;
+                });
+            }else{
+                $('#upc_payment-info__body button').prop('disabled', false);
+            }
         });
     });
 </script>
