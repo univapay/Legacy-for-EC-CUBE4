@@ -100,6 +100,7 @@ class OrderController extends AbstractController
 
 
             $opts = array(
+                'http' => array(
                 'method' => "GET",
                 'header' => 'Referer: '.$referer."\r\n"
                 )
