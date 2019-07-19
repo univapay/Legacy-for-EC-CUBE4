@@ -96,6 +96,16 @@ class OrderController extends AbstractController
                 break;
             }
 
+            $referer = (empty($_SERVER["HTTPS"]) ? "http://" : "https://") . $_SERVER["HTTP_HOST"] . "/";
+
+
+            $opts = array(
+                'method' => "GET",
+                'header' => 'Referer: '.$referer."\r\n"
+                )
+            );
+            $context = stream_context_create($opts);
+
             //リクエストクエリ作成
             $url = $UpcPaymentPluginConfig->getApiUrl() . '?';
             $url .= "sid=" . $UpcPaymentPluginConfig->getApiId();
@@ -106,7 +116,7 @@ class OrderController extends AbstractController
             $url .= "&pid=" . $Order->getUpcPaymentPluginPid();
 
             //取消リクエスト
-            $rst = file_get_contents($url);
+            $rst = file_get_contents($url, false, $context);
 
             parse_str($rst, $rst_cancel);
             //結果取得
