@@ -25,6 +25,8 @@ use Plugin\UpcPaymentPlugin\Entity\PaymentStatus;
 use Plugin\UpcPaymentPlugin\Repository\PaymentStatusRepository;
 use Symfony\Component\Form\FormInterface;
 
+use Symfony\Component\HttpClient\HttpClient;
+
 /**
  * クレジットカード(トークン決済)の決済処理を行う.
  */
@@ -81,11 +83,12 @@ class CreditCard implements PaymentMethodInterface
      *
      * @throws \Eccube\Service\PurchaseFlow\PurchaseException
      */
-    public function verify()
+    public function verify(Request $request)
     {
-        // 決済サーバとの通信処理(有効性チェックやカード番号の下4桁取得)
-        // ...
-        //
+        // token情報の取得とオーダー情報へのセット
+
+        $rstToken = $request->query->get('upc_payment_plugin_token');
+        $rstLast4 = $request->query->get('upc_payment_plugin_card_last_4');
 
         if (true) {
             $result = new PaymentResult();
@@ -131,19 +134,43 @@ class CreditCard implements PaymentMethodInterface
      */
     public function checkout()
     {
-        // 決済サーバに仮売上のリクエスト送る(設定等によって送るリクエストは異なる)
-        // ...
-        //
+        // 決済サーバに仮売上のリクエスト送る
         $token = $this->Order->getUpcPaymentPluginToken();
+        $token =. '?no=' . $this->Order->getOrderNo();
+        $token .= "&sid=" . $UpcPaymentPluginConfig->getApiId();
+        //結果をjson＆キックバックで取得　
+        $token .= "&svid=1&ptype=1&rt=5";
+        $token .= "&job=";
+        $token .= $UpcPaymentPluginConfig->getCreditJob() == 0 ? "CAPTURE" : "AUTH";
+        $token .= "&siam1=" . $this->Order->getTotalPrice();
+        $token .= "&em=" . $this->Order->getEmail();
+        $token .= "&tn=" . $this->Order->getPhoneNumber();
 
-        if (true) {
-            // 受注ステータスを新規受付へ変更
-            $OrderStatus = $this->orderStatusRepository->find(OrderStatus::NEW);
+        //決済システムとの通信
+        $httpClient = HttpClient::create();
+        $response = $httpClient->request('GET', $token);
+
+        //結果の取得・確認
+        $statusCode = $response->getStatusCode();
+        $contentType = $response->getHeaders()['content-type'][0];
+        // $content = $response->getContent();
+        $content = $response->toArray();
+
+        //結果判定
+        if ($content["rst"] == 1) {
+            // 受注ステータスを入金済みへ変更
+            $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
             $this->Order->setOrderStatus($OrderStatus);
 
-            // 決済ステータスを仮売上へ変更
-            $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::PROVISIONAL_SALES);
-            $this->Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+            if($UpcPaymentPluginConfig->getCreditJob() == 0){
+              // CAPTURE決済ステータスを仮売上へ変更
+              $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
+              $this->Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+            }else{
+              // AUTH決済ステータスを仮売上へ変更
+              $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::PROVISIONAL_SALES);
+              $this->Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+            }
 
             // 注文完了画面/注文完了メールにメッセージを追加
             $this->Order->appendCompleteMessage('トークン -> '.$token);

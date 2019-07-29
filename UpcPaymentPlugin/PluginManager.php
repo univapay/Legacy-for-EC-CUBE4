@@ -33,7 +33,7 @@ class PluginManager extends AbstractPluginManager
 {
     public function enable(array $meta, ContainerInterface $container)
     {
-        // $this->createTokenPayment($container);
+        $this->createTokenPayment($container);
         $this->createLinkPayment($container);
         // $this->createCvsPayment($container);
         $this->createConfig($container);
