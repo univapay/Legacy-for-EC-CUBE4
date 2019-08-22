@@ -27,6 +27,7 @@ use Plugin\UpcPaymentPlugin\Repository\PaymentStatusRepository;
 use Plugin\UpcPaymentPlugin\Service\Method\LinkCreditCard;
 use Plugin\UpcPaymentPlugin\Service\Method\Alipay;
 use Plugin\UpcPaymentPlugin\Service\Method\Wechat;
+use Plugin\UpcPaymentPlugin\Service\Method\CreditCard;
 
 
 class OrderController extends AbstractController
@@ -84,6 +85,9 @@ class OrderController extends AbstractController
               // wechat
               case Wechat::class:
                 $svid = 23;
+                break;
+              case CreditCard::class:
+                $svid = 1;
                 break;
               //paidy gw処理未実装なためコメントアウト
               // case Paidy::class:

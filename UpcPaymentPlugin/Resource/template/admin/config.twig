@@ -59,8 +59,17 @@ file that was distributed with this source code.
                                 </div>
                             </div>
                             #}
+
+                            <div class="row">
+                                <div class="col-3"><span>{{ 'upc_payment_plugin.admin.config.use_cvv'|trans }}</span><span
+                                            class="badge badge-primary ml-1">{{ 'upc_payment_plugin.admin.config.required'|trans }}</span></div>
+                                <div class="col mb-2">
+                                    {{ form_widget(form.use_cvv) }}
+                                    {{ form_errors(form.use_cvv) }}
+                                </div>
+                            </div>
+
                             {{ form_widget(form.api_password,{ type : 'hidden' }) }}
-                            {{ form_widget(form.use_cvv,{ type : 'hidden' }) }}
                             {{ form_widget(form.use_split,{ type : 'hidden' }) }}
                             <div class="row">
                                 <div class="col-3"><span>{{ 'upc_payment_plugin.admin.config.credit_job'|trans }}</span><span

@@ -15,9 +15,16 @@ namespace Plugin\UpcPaymentPlugin;
 
 use Eccube\Event\TemplateEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Plugin\UpcPaymentPlugin\Repository\ConfigRepository;
 
 class UpcPaymentPluginEvent implements EventSubscriberInterface
 {
+    private $configRepository; // クラス変数を定義
+
+    public function __construct(ConfigRepository $configRepository)
+    {
+        $this->configRepository = $configRepository; // クラス変数にセット
+    }
     /**
      * リッスンしたいサブスクライバのイベント名の配列を返します。
      * 配列のキーはイベント名、値は以下のどれかをしてします。
@@ -37,6 +44,7 @@ class UpcPaymentPluginEvent implements EventSubscriberInterface
     {
         return [
             '@admin/Order/edit.twig' => 'onAdminOrderEditTwig',
+            'Shopping/index.twig' => 'onShoppingIndexTwig',
         ];
     }
 
@@ -44,4 +52,15 @@ class UpcPaymentPluginEvent implements EventSubscriberInterface
     {
         $event->addSnippet('@UpcPaymentPlugin/admin/order_edit.twig');
     }
+
+
+    /**
+     * @param TemplateEvent $event
+     */
+    public function onShoppingIndexTwig(TemplateEvent $event)
+    {
+        $BaseInfo = $this->configRepository->find(1);
+        $event->setParameter('Config', $BaseInfo); // パラメータに値をセット
+    }
+
 }

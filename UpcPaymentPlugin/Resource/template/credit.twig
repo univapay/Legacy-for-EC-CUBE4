@@ -5,54 +5,96 @@
 {% if Order.Payment.getMethodClass == 'Plugin\\UpcPaymentPlugin\\Service\\Method\\CreditCard' %}
     <script src="https://token.ccps.jp/UpcTokenPaymentMini.js"></script>
     <script>
+        $(window).on('load',function() {
+            $('.ec-blockBtn--action').get(0).type = 'button';
+        }
+        );
+
+
         $(function () {
             $('#shopping-form > div > div.ec-orderRole__summary > div > div.ec-totalBox__btn > button').on('click', function (e) {
                 // トークン取得処理
                 var card_no = $('#shopping_order_upc_payment_card_no').val();
+                var cvv = $('#shopping_order_upc_payment_cvv').val();
+                var exp = $('#shopping_order_upc_payment_exp_m').val() + $('#shopping_order_upc_payment_exp_y').val();
 
+                var holderfirstname  = $('#shopping_order_upc_payment_fn').val();
+                var holderlastname  = $('#shopping_order_upc_payment_ln').val();
                 if (card_no == '') {
                     alert('カード番号が入力されていません');
                     return false;
                 }
 
                 // サーバ通信してトークンを取得
-                upcgettoken();
-            });
+                Multipayment.init('{{ Config.apiId }}');
+                Multipayment.getMember({
+                  cardno: card_no,
+                  securitycode: cvv,
+                  expire: exp,
+                  holderfirstname: holderfirstname,
+                  holderlastname: holderlastname
+                },
+                upcPaymentToken);
+                });
+
+
         });
 
         function upcPaymentToken(response) {
           console.log(response);
           // hiddenにトークンをセット
           document.getElementById('shopping_order_upc_payment_plugin_token').value = response.tokenObject.token;
-          document.getElementById('shopping-form').submit;
-        }
-
-        function upcgettoken(){
-          Multipayment.init('103842');
-          Multipayment.getMember({　
-              cardno: '4444333322221111',
-              securitycode: '123',
-              expire: '1225',
-              holderfirstname: 'fn',
-              holderlastname: 'ln'
-            },
-            upcPaymentToken);
+          document.getElementById('shopping_order_upc_payment_card_no_last4').value = response.tokenObject.maskedCardNo;
+          $('#shopping_order_upc_payment_card_no').val('');
+          $('#shopping-form').submit();
         }
 
     </script>
     <div class="ec-orderPayment">
         <div class="ec-rectHeading">
-            <h2>クレジットカード</h2>
+            <h2>クレジットカード情報</h2>
+
         </div>
-        <div class="ec-input">
+        <div class="ec-input" style="display:inline-block;">
             {# jsで取得したトークンをhiddenでサーバサイドへsubmitする. #}
             {{ form_widget(form.upc_payment_plugin_token) }}
-            {% dump(Order) %}
-            <input type="text" id="shopping_order_upc_payment_cvv">
-            <input type="text" id="shopping_order_upc_payment_split">
+            {{ form_widget(form.upc_payment_card_no_last4) }}
 
             {# カード番号をサーバサイドへPOSTしないよう, name属性は出力しない #}
-            <input type="text" id="shopping_order_upc_payment_card_no">
+            <label style="display:block;">クレジットカード番号</label>
+            <input type="text" id="shopping_order_upc_payment_card_no" placeholder="{{ 'upc_payment_plugin.shopping.credit.numbermessage'|trans }}">
+            {% if Config.useCvv == 0 %}
+            <label style="display:block;">セキュリティコード</label>
+            <input type="text" id="shopping_order_upc_payment_cvv" placeholder="{{ 'upc_payment_plugin.shopping.credit.numbermessage'|trans }}">
+            {% endif %}
+            <label style="display:block;">カード名義</label>
+            <input type="text" style="float:left;width:50%;" id="shopping_order_upc_payment_ln" placeholder="tarou">
+            <input type="text" style="float:left;width:50%;" id="shopping_order_upc_payment_fn" placeholder="yamada">
+            <span>{{ 'upc_payment_plugin.shopping.credit.namemessage'|trans }}</span>
+            <label style="display:block;">有効期限</label>
+            <select id="shopping_order_upc_payment_exp_m" style="float:left;width:50%;">
+                <option value= "01">01</option>
+                <option value= "02">02</option>
+                <option value= "03">03</option>
+                <option value= "04">04</option>
+                <option value= "05">05</option>
+                <option value= "06">06</option>
+                <option value= "07">07</option>
+                <option value= "08">08</option>
+                <option value= "09">09</option>
+                <option value= "10">10</option>
+                <option value= "11">11</option>
+                <option value= "12">12</option>
+            </select>
+            <select id="shopping_order_upc_payment_exp_y" style="float:left;width:50%;">
+                {% set year_start = "now"|date("Y") %}
+                {% set year_end   = year_start + 10 %}
+                {% for i in year_start..year_end %}
+                	<option value="{{i}}">{{i}}</option>
+                {% endfor %}
+
+            </select>
+            <input id="upc_payment_card_no_last4" name="upc_payment_card_no_last4" type="hidden">
         </div>
     </div>
 {% else %}

@@ -221,6 +221,9 @@ class PaymentController extends AbstractController
         $kbJob = $request->get('job');
         echo $kbJob;
         if ($kbJob == "AUTH"){
+            // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
+            $this->purchaseFlow->commit($Order, new PurchaseContext());
+
             //注文日を設定
             $Order->setOrderDate(new \DateTime());
             // 決済ステータスを仮売上へ変更
@@ -242,6 +245,9 @@ class PaymentController extends AbstractController
             $this->entityManager->flush();
 
         }elseif ($kbJob == "CAPTURE"){
+            // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
+            $this->purchaseFlow->commit($Order, new PurchaseContext());
+
             //注文日を設定
             $Order->setOrderDate(new \DateTime());
             // 決済ステータスを実売上へ変更
@@ -278,11 +284,6 @@ class PaymentController extends AbstractController
         //決済番号を保存
         $pid = $request->get('pid');
         $Order->setUpcPaymentPluginPid($pid);
-
-        // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
-        // $this->purchaseFlow->commit($Order, new PurchaseContext());
-
-        // $this->entityManager->flush();
 
         $this->entityManager->persist($Order);
         $this->entityManager->flush($Order);
@@ -331,6 +332,9 @@ class PaymentController extends AbstractController
                 break;
             // 決済完了
             case "SALES":
+                // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
+                $this->purchaseFlow->commit($Order, new PurchaseContext());
+
                 //注文日を設定
                 $Order->setOrderDate(new \DateTime());
                 // 決済ステータスを実売上へ変更
@@ -406,6 +410,9 @@ class PaymentController extends AbstractController
                 break;
             // 決済完了
             case "SALES":
+                // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
+                $this->purchaseFlow->commit($Order, new PurchaseContext());
+
                 //注文日を設定
                 $Order->setOrderDate(new \DateTime());
                 // 決済ステータスを実売上へ変更
@@ -489,6 +496,9 @@ class PaymentController extends AbstractController
                 break;
             // 決済完了
             case "AUTH":
+                // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
+                $this->purchaseFlow->commit($Order, new PurchaseContext());
+
                 //注文日を設定
                 $Order->setOrderDate(new \DateTime());
                 // 決済ステータスを仮売上へ変更
@@ -594,6 +604,9 @@ class PaymentController extends AbstractController
 
                 break;
             case "EBTRANSFER":
+                // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
+                $this->purchaseFlow->commit($Order, new PurchaseContext());
+
                 // 決済ステータスを入金済みへ変更
                 $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::EBTRANSFER);
                 $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);

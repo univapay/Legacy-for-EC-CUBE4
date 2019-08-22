@@ -63,6 +63,10 @@ class CreditCardExtention extends AbstractTypeExtension
                 'required' => false,
                 'mapped' => true, // Orderエンティティに追加したカラムなので、mappedはtrue
             ]);
+            $form->add('upc_payment_card_no_last4', HiddenType::class, [
+                'required' => false,
+                'mapped' => false, // Orderエンティティに追加したカラムなので、mappedはtrue
+            ]);
         });
 
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
