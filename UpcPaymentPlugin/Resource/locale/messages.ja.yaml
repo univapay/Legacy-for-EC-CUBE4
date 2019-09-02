@@ -59,9 +59,9 @@ upc_payment_plugin.admin.payment_status.bulk_modal_body: 複数の項目を変�
 upc_payment_plugin.admin.payment_status.bulk_modal_action_exec: 実行
 upc_payment_plugin.admin.payment_status.bulk_modal_action_cancel: キャンセル
 upc_payment_plugin.admin.payment_status.bulk_alert: 選択されていません
-upc_payment_plugin.shopping.checkout.error: クレジットカード決済に失敗しました。
-upc_payment_plugin.shopping.checkout.error.Authentication: カード会社より承認が下りなかった為、決済に失敗しました。詳細理由についてはカード裏面に記載のカード会社へお問い合わせくださいませ。
-upc_payment_plugin.shopping.verify.error: カードを利用することができません。
+upc_payment_plugin.shopping.checkout.error: カード情報を再入力してください
+upc_payment_plugin.shopping.checkout.error.Authentication: 決済に失敗しました。詳細はご利用のカード会社へお問い合わせください。
+upc_payment_plugin.shopping.verify.error: カード情報を再入力してください
 upc_payment_plugin.shopping.cvs.error: コンビニ決済に失敗しました。
 upc_payment_plugin.shopping.credit.namemessage: 半角英字で入力して下さい。
 upc_payment_plugin.shopping.credit.numbermessage: 半角数字で入力してください。

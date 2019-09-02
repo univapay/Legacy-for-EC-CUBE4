@@ -28,6 +28,7 @@ use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Form\Form;
 
+
 /**
  * クレジットカード(トークン決済)の決済処理を行う.
  */
@@ -57,6 +58,7 @@ class CreditCard implements PaymentMethodInterface
      * @var PurchaseFlow
      */
     private $purchaseFlow;
+
 
     /**
      * CreditCard constructor.
@@ -91,7 +93,7 @@ class CreditCard implements PaymentMethodInterface
     {
         // token情報の取得とオーダー情報へのセット
         $this->setFormType($this->form);
-        if (true) {
+        if ($this->form->getViewData()->getUpcPaymentPluginToken()) {
             $result = new PaymentResult();
             $result->setSuccess(true);
 
@@ -184,7 +186,6 @@ class CreditCard implements PaymentMethodInterface
             // $this->Order->appendCompleteMessage('トークン -> '.$token);
             // $this->Order->appendCompleteMailMessage('トークン -> '.$token);
 
-
             $result = new PaymentResult();
             $result->setSuccess(true);
         } else {
@@ -205,20 +206,25 @@ class CreditCard implements PaymentMethodInterface
             //T52G01　T52G13　T52G92　が含まれる場合は、認証エラーの表示
 
             if(strpos($rst['ec'],'T52G01') !== false || strpos($rst['ec'],'T52G13') || strpos($rst['ec'],'T52G92') ){
-                $result->setErrors([trans('upc_payment_plugin.shopping.checkout.error.Authentication')]);
+                $result->setErrors(["エラーコード : ".$rst['ec']. " " .trans('upc_payment_plugin.shopping.checkout.error.Authentication')]);
             }else{
-                $result->setErrors([trans('upc_payment_plugin.shopping.checkout.error')."エラーコード : ".$rst['ec']]);
+                $result->setErrors("エラーコード : ".$rst['ec']. " " .[trans('upc_payment_plugin.shopping.checkout.error')]);
             }
 
-            if($rst['ec'] ){
+            log_info('[決済エラー] 結果.', [$rst['ec'] . '注文番号' . $this->Order->getOrderNo()]);
 
-            }else{
-            }
 
         }
 
         return $result;
     }
+
+
+    public function getRequest(Request $request)
+    {
+        $this->request = $request;
+    }
+
 
     /**
      * {@inheritdoc}

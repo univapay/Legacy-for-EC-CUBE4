@@ -7,6 +7,7 @@
     <script>
         $(window).on('load',function() {
             $('.ec-blockBtn--action').get(0).type = 'button';
+            document.getElementById('shopping_order_upc_payment_plugin_token').value = "";
         }
         );
 
@@ -42,11 +43,19 @@
 
         function upcPaymentToken(response) {
           console.log(response);
-          // hiddenにトークンをセット
-          document.getElementById('shopping_order_upc_payment_plugin_token').value = response.tokenObject.token;
-          document.getElementById('shopping_order_upc_payment_card_no_last4').value = response.tokenObject.maskedCardNo;
-          $('#shopping_order_upc_payment_card_no').val('');
-          $('#shopping-form').submit();
+              if (response.resultCode !== "000" && response.resultCode !== 0) {
+                  var lang = "ja";
+                      if (document.getElementById('lang') != null)
+                              lang = document.getElementById('lang').value;
+                              window.alert('Error: ' + getResultCodeDetail(response.resultCode, lang));
+                              return false;
+                      } else {
+                          // hiddenにトークンをセット
+                          document.getElementById('shopping_order_upc_payment_plugin_token').value = response.tokenObject.token;
+                          document.getElementById('shopping_order_upc_payment_card_no_last4').value = response.tokenObject.maskedCardNo;
+                          $('#shopping_order_upc_payment_card_no').val('');
+                          $('#shopping-form').submit();
+                      }
         }
 
     </script>
@@ -70,7 +79,6 @@
             <label style="display:block;">カード名義</label>
             <input type="text" style="float:left;width:50%;" id="shopping_order_upc_payment_ln" placeholder="tarou">
             <input type="text" style="float:left;width:50%;" id="shopping_order_upc_payment_fn" placeholder="yamada">
-            <span>{{ 'upc_payment_plugin.shopping.credit.namemessage'|trans }}</span>
             <label style="display:block;">有効期限</label>
             <select id="shopping_order_upc_payment_exp_m" style="float:left;width:50%;">
                 <option value= "01">01</option>
