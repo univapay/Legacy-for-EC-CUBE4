@@ -208,7 +208,7 @@ class CreditCard implements PaymentMethodInterface
             if(strpos($rst['ec'],'T52G01') !== false || strpos($rst['ec'],'T52G13') || strpos($rst['ec'],'T52G92') ){
                 $result->setErrors(["エラーコード : ".$rst['ec']. " " .trans('upc_payment_plugin.shopping.checkout.error.Authentication')]);
             }else{
-                $result->setErrors("エラーコード : ".$rst['ec']. " " .[trans('upc_payment_plugin.shopping.checkout.error')]);
+                $result->setErrors(["エラーコード : ".$rst['ec']. " " .trans('upc_payment_plugin.shopping.checkout.error')]);
             }
 
             log_info('[決済エラー] 結果.', [$rst['ec'] . '注文番号' . $this->Order->getOrderNo()]);

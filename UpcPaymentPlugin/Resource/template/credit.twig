@@ -25,6 +25,9 @@
                     alert('カード番号が入力されていません');
                     return false;
                 }
+				if (cvv === undefined) {
+				  cvv = "";
+				}
 
                 // サーバ通信してトークンを取得
                 Multipayment.init('{{ Config.apiId }}');
