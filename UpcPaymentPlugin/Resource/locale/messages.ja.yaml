@@ -29,7 +29,7 @@ upc_payment_plugin.admin.config.use_cvv: CVVの入力欄表示
 upc_payment_plugin.admin.config.use_split: 国内分割の選択欄表示
 upc_payment_plugin.admin.order_edit.title: 決済情報
 upc_payment_plugin.admin.order_edit.cvs_title: コンビニ決済情報
-upc_payment_plugin.admin.order_edit.payment_status: 決済種別
+upc_payment_plugin.admin.order_edit.payment_status: 決済状況
 upc_payment_plugin.admin.order_edit.cvs_payment_status: コンビニ決済状況
 upc_payment_plugin.admin.order_edit.cvs_type: コンビニ種別
 upc_payment_plugin.admin.order_edit.payment_action: 決済操作

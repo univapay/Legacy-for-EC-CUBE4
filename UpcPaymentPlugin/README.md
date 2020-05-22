@@ -1,5 +1,5 @@
-# sample-payment-plugin
-EC-CUBE4の決済プラグインサンプルです。
+# upc-payment-plugin
+EC-CUBE4の決済プラグインです。
 リンク型クレジットカード決済とトークン型クレジットカード決済およびコンビニ決済の3種類の決済方法を追加できます。
 
 - [EC-CUBE4](#ec-cube4)
@@ -227,7 +227,7 @@ class Event implements EventSubscriberInterface
             'xxx.twig' => 'onXxxTwig',
         ];
     }
-    
+
     public function onXxxTwig(TemplateEvent $event)
     {
         $event->setParameter('name', '球部太郎');
@@ -235,7 +235,7 @@ class Event implements EventSubscriberInterface
 }
 ```
 
-本サンプルプラグインではトークン型クレジットカード決済とコンビニ決済の入力フォームと確認フォームのタグを手動で埋め込む必要があります。
+本プラグインではトークン型クレジットカード決済で確認フォームのタグを手動で埋め込む必要があります。
 
 管理画面のページ管理からテンプレートファイルの適当な箇所に以下のタグを追加してください。
 
@@ -243,12 +243,6 @@ class Event implements EventSubscriberInterface
 ```twig
 {{ include('@UpcPaymentPlugin/credit.twig', ignore_missing=true) }}
 {{ include('@UpcPaymentPlugin/cvs.twig', ignore_missing=true) }}
-```
-- 商品購入/ご注文確認ページ
-```twig
-{{ include('@UpcPaymentPlugin/credit_confirm.twig', ignore_missing=true) }}
-{{ include('@UpcPaymentPlugin/cvs_confirm.twig', ignore_missing=true) }}
-```
 
 ### 画面への介入について
 
