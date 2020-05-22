@@ -35,7 +35,7 @@ class PluginManager extends AbstractPluginManager
     {
         $this->createTokenPayment($container);
         $this->createLinkPayment($container);
-        // $this->createCvsPayment($container);
+        $this->createCvsPayment($container);
         $this->createConfig($container);
         $this->createPaymentStatuses($container);
         $this->createCvsPaymentStatuses($container);
@@ -198,7 +198,7 @@ class PluginManager extends AbstractPluginManager
         $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
         $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;
 
-        $Payment = $paymentRepository->findOneBy(['method_class' => Cvs::class]);
+        $Payment = $paymentRepository->findOneBy(['method_class' => Convenience::class]);
         if ($Payment) {
             return;
         }

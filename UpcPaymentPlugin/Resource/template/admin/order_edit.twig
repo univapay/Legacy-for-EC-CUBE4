@@ -80,7 +80,6 @@
             </div>
         </div>
     </div>
-    {#
     <div id="upc_payment-cvsinfo" class="card rounded border-0 mb-4">
         <div class="card-header">
             <div class="row">
@@ -100,20 +99,7 @@
                         {{ Order.upc_payment_plugin_cvs_payment_status is not empty ? Order.upc_payment_plugin_cvs_payment_status.name : '--' }}
                     </div>
                 </div>
-                <div class="row mb-2">
-                    <div class="col-2"><span>{{ 'upc_payment_plugin.admin.order_edit.cvs_type'|trans }}</span></div>
-                    <div class="col">
-                        {{ Order.upc_payment_plugin_cvs_type is not empty ? Order.upc_payment_plugin_cvs_type.name : '--' }}
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                決済状況変更のテストはこちらから:
-                <a target="_blank" href="{{ url('upc_payment_plugin_receive_cvs_status') }}?no={{ Order.orderNo }}&cvs_status={{ constant('Plugin\\UpcPaymentPlugin\\Entity\\CvsPaymentStatus::COMPLETE') }}">決済完了</a>
-                <a target="_blank" href="{{ url('upc_payment_plugin_receive_cvs_status') }}?no={{ Order.orderNo }}&cvs_status={{ constant('Plugin\\UpcPaymentPlugin\\Entity\\CvsPaymentStatus::EXPIRED') }}">期限切れ</a>
-                <a target="_blank" href="{{ url('upc_payment_plugin_receive_cvs_status') }}?no={{ Order.orderNo }}&cvs_status={{ constant('Plugin\\UpcPaymentPlugin\\Entity\\CvsPaymentStatus::FAILURE') }}">決済失敗</a>
             </div>
         </div>
     </div>
-    #}
 </div>

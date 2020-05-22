@@ -480,6 +480,7 @@ class PaymentController extends AbstractController
         switch ($kbJob) {
             // 決済取消
             case "REFUND":
+            case "refund":
                 // 受注ステータス　取り消しを設定
                 $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
                 $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
@@ -488,6 +489,7 @@ class PaymentController extends AbstractController
                 break;
             // 決済取消
             case "CLOSE":
+            case "close":
                 // 受注ステータス　取り消しを設定
                 $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::CANCEL);
                 $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
@@ -496,6 +498,7 @@ class PaymentController extends AbstractController
                 break;
             // 決済完了
             case "AUTH":
+            case "auth":
                 // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
                 $this->purchaseFlow->commit($Order, new PurchaseContext());
 
@@ -521,6 +524,7 @@ class PaymentController extends AbstractController
 
                 break;
             case "CAPTURE":
+            case "capture":
                 //実売り時の処理
                 // 決済ステータスを仮売上へ変更
                 $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
@@ -642,7 +646,7 @@ class PaymentController extends AbstractController
     /**
      * 結果通知URLを受け取る(コンビニ決済).
      *
-     * @Route("/upc_payment_plugin_receive_cvs_status", name="upc_payment_plugin_receive_cvs_status")
+     * @Route("/upc_payment_plugin_receive_cvs", name="upc_payment_plugin_receive_cvs")
      */
     public function receiveCvsStatus(Request $request)
     {
@@ -666,54 +670,59 @@ class PaymentController extends AbstractController
             throw new BadRequestHttpException();
         }
 
-        $cvs_status = $request->get('cvs_status');
-
+        $cvs_status = $request->get('job');
+        echo "csv ";
         switch ($cvs_status) {
-            // 決済失敗
-            case CvsPaymentStatus::FAILURE:
-                // 受注ステータスをキャンセルへ変更
-                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
-                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
-                    $this->orderStateMachine->apply($Order, $OrderStatus);
+            // 決済申込
+            case "CAPTURE":
+            case "capture":
+	            //注文日を設定
+	            $Order->setOrderDate(new \DateTime());
 
-                    // 決済ステータスを決済失敗へ変更
-                    $PaymentStatus = $this->cvsPaymentStatusRepository->find(CvsPaymentStatus::FAILURE);
-                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
-                } else {
-                    throw new BadRequestHttpException();
-                }
+                // 受注ステータスを決済申込へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::REQUEST);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                // 受注ステータス　新規注文を設定
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::NEW);
+                $Order->setOrderStatus($OrderStatus);
 
-                break;
-            // 期限切れ
-            case CvsPaymentStatus::EXPIRED:
-                // 受注ステータスをキャンセルへ変更
-                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::CANCEL);
-                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
-                    $this->orderStateMachine->apply($Order, $OrderStatus);
+                // コンビニステータス　新規注文を設定
+                $CvsOrderStatus = $this->cvsPaymentStatusRepository->find(CvsPaymentStatus::REQUEST);
+                $Order->setUpcPaymentPluginCvsPaymentStatus($CvsOrderStatus);
+				echo $cvs_status;
 
-                    // 決済ステータスを期限切れへ変更
-                    $PaymentStatus = $this->cvsPaymentStatusRepository->find(CvsPaymentStatus::EXPIRED);
-                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
-                } else {
-                    throw new BadRequestHttpException();
-                }
+                // メール送信
+                log_info('[注文処理] 注文メールの送信を行います.', [$Order->getId()]);
+                $this->mailService->sendOrderMail($Order);
+                $this->entityManager->flush();
 
                 break;
             // 決済完了
-            case CvsPaymentStatus::COMPLETE:
-            default:
-                // 受注ステータスを対応中へ変更
-                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::IN_PROGRESS);
-                if ($this->orderStateMachine->can($Order, $OrderStatus)) {
-                    $this->orderStateMachine->apply($Order, $OrderStatus);
+            case "SALES":
+            case "sales":
+                // 受注ステータスを決済申込へ変更
+                $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::SALES);
+                $Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
+                // 受注ステータス　新規注文を設定
+                $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PAID);
+                $Order->setOrderStatus($OrderStatus);
+                // コンビニステータス　新規注文を設定
+                $CvsOrderStatus = $this->cvsPaymentStatusRepository->find(CvsPaymentStatus::COMPLETE);
+                $Order->setUpcPaymentPluginCvsPaymentStatus($CvsOrderStatus);
+				echo $cvs_status;
 
-                    // 決済ステータスを決済完了へ変更
-                    $PaymentStatus = $this->cvsPaymentStatusRepository->find(CvsPaymentStatus::COMPLETE);
-                    $Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
-                } else {
-                    throw new BadRequestHttpException();
-                }
+                //入金日を設定
+                $Order->setPaymentDate(new \DateTime());
+
+                $this->mailService->sendOrderMail($Order);
+                $this->entityManager->flush();
+
+            default:
+				break;
         }
+        //決済番号を保存
+        $pid = $request->get('pid');
+        $Order->setUpcPaymentPluginPid($pid);
 
         $this->entityManager->flush();
 

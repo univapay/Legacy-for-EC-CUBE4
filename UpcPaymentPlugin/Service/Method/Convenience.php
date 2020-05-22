@@ -26,6 +26,12 @@ use Plugin\UpcPaymentPlugin\Entity\CvsPaymentStatus;
 use Plugin\UpcPaymentPlugin\Repository\CvsPaymentStatusRepository;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use Plugin\UpcPaymentPlugin\entity\Config;
+use Plugin\UpcPaymentPlugin\Repository\ConfigRepository;
+use Plugin\UpcPaymentPlugin\Entity\PaymentStatus;
+use Plugin\UpcPaymentPlugin\Repository\PaymentStatusRepository;
+
+use Eccube\Service\CartService;
 
 /**
  * コンビニ払いの決済処理を行う
@@ -61,17 +67,25 @@ class Convenience implements PaymentMethodInterface
      * LinkCreditCard constructor.
      *
      * @param OrderStatusRepository $orderStatusRepository
+     * @param PaymentStatusRepository $paymentStatusRepository
      * @param CvsPaymentStatusRepository $cvsPaymentStatusRepository
      * @param PurchaseFlow $shoppingPurchaseFlow
+     * @param ConfigRepository $ConfigRepository
      */
     public function __construct(
         OrderStatusRepository $orderStatusRepository,
+        PaymentStatusRepository $paymentStatusRepository,
         CvsPaymentStatusRepository $cvsPaymentStatusRepository,
-        PurchaseFlow $shoppingPurchaseFlow
+        PurchaseFlow $shoppingPurchaseFlow,
+        ConfigRepository $ConfigRepository,
+		CartService $cartService
     ) {
         $this->orderStatusRepository = $orderStatusRepository;
+        $this->paymentStatusRepository = $paymentStatusRepository;
         $this->cvsPaymentStatusRepository = $cvsPaymentStatusRepository;
         $this->purchaseFlow = $shoppingPurchaseFlow;
+        $this->configRepository = $ConfigRepository;
+		$this->cartService = $cartService;
     }
 
     /**
@@ -105,55 +119,49 @@ class Convenience implements PaymentMethodInterface
         $this->Order->setOrderStatus($OrderStatus);
 
         // 決済ステータスを未決済へ変更
-        $PaymentStatus = $this->cvsPaymentStatusRepository->find(CvsPaymentStatus::OUTSTANDING);
-        $this->Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus);
+        $PaymentStatus = $this->paymentStatusRepository->find(PaymentStatus::OUTSTANDING);
+        $this->Order->setUpcPaymentPluginPaymentStatus($PaymentStatus);
 
         // purchaseFlow::prepareを呼び出し, 購入処理を進める.
         $this->purchaseFlow->prepare($this->Order, new PurchaseContext());
-        return null;
+
+        //pluginconfigを呼び出す
+        $UpcPaymentPluginConfig = $this->configRepository->get();
+
+        // 決済サーバのカード入力画面へリダイレクトする.
+        $url = $UpcPaymentPluginConfig->getApiUrl() . '?no=' . $this->Order->getOrderNo();
+        $url .= "&sid=" . $UpcPaymentPluginConfig->getApiId();
+        $url .= "&svid=9&ptype=8";
+        $url .= "&job=CAPTURE";
+        $url .= "&siam1=" . $this->Order->getTotalPrice();
+        $url .= "&em=" . $this->Order->getEmail();
+        $url .= "&tn=" . $this->Order->getPhoneNumber();
+        $url .= "&cvna1=" . $this->Order->getName01();
+        $url .= "&cvna2=" . $this->Order->getName02();
+        $url .= "&sucd=p_return";
+
+
+
+        $response = new RedirectResponse($url);
+        $dispatcher = new PaymentDispatcher();
+        $dispatcher->setResponse($response);
+
+		//ショップ画面に戻らないためここでカート削除
+		$this->cartService->clear();
+
+        return $dispatcher;
     }
 
     /**
      * 注文時に呼び出される.
      *
      * @return PaymentResult
+     * リンク式の場合, applyで決済サーバのカード入力画面へ遷移するため, checkoutは使用しない.
      */
     public function checkout()
     {
-        // 決済サーバとの通信処理(コンビニ払い込み情報等の取得)
-        // ...
-        //
-
-        if (true) {
-            $result = new PaymentResult();
-            $result->setSuccess(true);
-
-            // 受注ステータスを新規受付へ変更
-            $OrderStatus = $this->orderStatusRepository->find(OrderStatus::NEW);
-            $this->Order->setOrderStatus($OrderStatus);
-
-            $PaymentStatus = $this->cvsPaymentStatusRepository->find(CvsPaymentStatus::REQUEST);
-            $this->Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus); // 決済要求成功に変更
-            $message = 'コンビニ払込票番号：7192771999999';
-            $this->Order->appendCompleteMessage($message);
-            $this->Order->appendCompleteMailMessage($message);
-
-            // purchaseFlow::commitを呼び出し, 購入処理を完了させる.
-            $this->purchaseFlow->commit($this->Order, new PurchaseContext());
-        } else {
-            // 受注ステータスを購入処理中へ変更
-            $OrderStatus = $this->orderStatusRepository->find(OrderStatus::PROCESSING);
-            $this->Order->setOrderStatus($OrderStatus);
-
-            $result = new PaymentResult();
-            $result->setSuccess(false);
-            $PaymentStatus = $this->cvsPaymentStatusRepository->find(CvsPaymentStatus::FAILURE);
-            $this->Order->setUpcPaymentPluginCvsPaymentStatus($PaymentStatus); // 決済失敗
-            $result->setErrors([trans('upc_payment.shopping.cvs.error')]);
-
-            // 失敗時はpurchaseFlow::rollbackを呼び出す.
-            $this->purchaseFlow->rollback($this->Order, new PurchaseContext());
-        }
+        $result = new PaymentResult();
+        $result->setSuccess(true);
 
         return $result;
     }
