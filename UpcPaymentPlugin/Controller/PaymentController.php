@@ -713,8 +713,6 @@ class PaymentController extends AbstractController
 
                 //入金日を設定
                 $Order->setPaymentDate(new \DateTime());
-
-                $this->mailService->sendOrderMail($Order);
                 $this->entityManager->flush();
 
             default:
