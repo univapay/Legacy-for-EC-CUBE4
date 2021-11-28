@@ -49,7 +49,8 @@ class PluginManager extends AbstractPluginManager
     private function createTokenPayment(ContainerInterface $container)
     {
         $entityManager = $container->get('doctrine')->getManager();
-        $paymentRepository = $container->get(PaymentRepository::class);
+        // $paymentRepository = $container->get(PaymentRepository::class);
+        $paymentRepository = $entityManager->getRepository(Payment::class);
 
         $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
         $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;
@@ -73,7 +74,9 @@ class PluginManager extends AbstractPluginManager
     private function createLinkPayment(ContainerInterface $container)
     {
         $entityManager = $container->get('doctrine')->getManager();
-        $paymentRepository = $container->get(PaymentRepository::class);
+        // $paymentRepository = $container->get(PaymentRepository::class);
+        $paymentRepository = $entityManager->getRepository(Payment::class);
+
 
         $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
         $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;
@@ -97,7 +100,8 @@ class PluginManager extends AbstractPluginManager
     private function createAlipayPayment(ContainerInterface $container)
     {
         $entityManager = $container->get('doctrine')->getManager();
-        $paymentRepository = $container->get(PaymentRepository::class);
+        // $paymentRepository = $container->get(PaymentRepository::class);
+        $paymentRepository = $entityManager->getRepository(Payment::class);
 
         $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
         $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;
@@ -121,7 +125,8 @@ class PluginManager extends AbstractPluginManager
     private function createWechatPayment(ContainerInterface $container)
     {
         $entityManager = $container->get('doctrine')->getManager();
-        $paymentRepository = $container->get(PaymentRepository::class);
+        // $paymentRepository = $container->get(PaymentRepository::class);
+        $paymentRepository = $entityManager->getRepository(Payment::class);
 
         $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
         $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;
@@ -145,7 +150,8 @@ class PluginManager extends AbstractPluginManager
     private function createPaidyPayment(ContainerInterface $container)
     {
         $entityManager = $container->get('doctrine')->getManager();
-        $paymentRepository = $container->get(PaymentRepository::class);
+        // $paymentRepository = $container->get(PaymentRepository::class);
+        $paymentRepository = $entityManager->getRepository(Payment::class);
 
         $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
         $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;
@@ -169,7 +175,8 @@ class PluginManager extends AbstractPluginManager
     private function createBankPayment(ContainerInterface $container)
     {
         $entityManager = $container->get('doctrine')->getManager();
-        $paymentRepository = $container->get(PaymentRepository::class);
+        // $paymentRepository = $container->get(PaymentRepository::class);
+        $paymentRepository = $entityManager->getRepository(Payment::class);
 
         $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
         $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;
@@ -193,7 +200,8 @@ class PluginManager extends AbstractPluginManager
     private function createCvsPayment(ContainerInterface $container)
     {
         $entityManager = $container->get('doctrine')->getManager();
-        $paymentRepository = $container->get(PaymentRepository::class);
+        // $paymentRepository = $container->get(PaymentRepository::class);
+        $paymentRepository = $entityManager->getRepository(Payment::class);
 
         $Payment = $paymentRepository->findOneBy([], ['sort_no' => 'DESC']);
         $sortNo = $Payment ? $Payment->getSortNo() + 1 : 1;

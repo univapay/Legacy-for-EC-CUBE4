@@ -93,4 +93,11 @@ class CvsExtension extends AbstractTypeExtension
     {
         return OrderType::class;
     }
+    /**
+     * Return the class of the type being extended.
+     */
+    public static function getExtendedTypes(): iterable
+    {
+        return [EntryType::class];
+    }
 }

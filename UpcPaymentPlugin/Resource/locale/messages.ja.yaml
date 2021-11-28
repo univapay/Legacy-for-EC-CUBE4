@@ -12,7 +12,7 @@ upc_payment_plugin.admin.order.cancel.rejection: 取り消しができない支�
 upc_payment_plugin.admin.order.change_sales.success: 実売処理を行いました。
 upc_payment_plugin.admin.order.change_sales.failed: 実売に失敗しました。
 upc_payment_plugin.admin.order.change_sales.error: 実売は仮売のみ可能です。
-upc_payment_plugin.admin.payment_status.bulk_action.success: %count%件を処理しました。
+upc_payment_plugin.admin.payment_status.bulk_action.success: '%count%件を処理しました。'
 
 # twig
 upc_payment_plugin.admin.config.title: サンプル決済
@@ -38,14 +38,14 @@ upc_payment_plugin.admin.order_edit.payment_action_change_sales: 実売実行
 upc_payment_plugin.admin.payment_status.title: 決済状況一覧
 upc_payment_plugin.admin.payment_status.sub_title: 受注管理
 upc_payment_plugin.admin.payment_status.search: 検索
-upc_payment_plugin.admin.payment_status.search_result_count: 検索結果：%count%件が該当しました
+upc_payment_plugin.admin.payment_status.search_result_count: '検索結果：%count%件が該当しました'
 upc_payment_plugin.admin.payment_status.search_condition_payment: 支払方法
 upc_payment_plugin.admin.payment_status.search_condition_order_status: 対応状況
 upc_payment_plugin.admin.payment_status.search_condition_payment_status: 決済状況
 upc_payment_plugin.admin.payment_status.invalid_condition: 検索条件に誤りがあります
 upc_payment_plugin.admin.payment_status.no_result: 検索条件に合致するデータが見つかりませんでした
 upc_payment_plugin.admin.payment_status.change_condition: 検索条件を変えて、再度検索をお試しください。
-upc_payment_plugin.admin.payment_status.display_count: %count%件
+upc_payment_plugin.admin.payment_status.display_count: '%count%件'
 upc_payment_plugin.admin.payment_status.col_order_date: 受注日時
 upc_payment_plugin.admin.payment_status.col_order_no: 注文番号
 upc_payment_plugin.admin.payment_status.col_order_name: お名前

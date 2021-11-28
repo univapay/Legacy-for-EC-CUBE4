@@ -3,4 +3,8 @@
   # upc_payment.xxx: 1
 
 # コンテナ定義
-#services:
+services:
+    Plugin\UpcPaymentPlugin\Services:
+      public: true
+      arguments:
+        - '@Eccube\Common\EccubeConfig'
