@@ -15,7 +15,7 @@ upc_payment_plugin.admin.order.change_sales.error: 実売は仮売のみ可能�
 upc_payment_plugin.admin.payment_status.bulk_action.success: '%count%件を処理しました。'
 
 # twig
-upc_payment_plugin.admin.config.title: サンプル決済
+upc_payment_plugin.admin.config.title: UPC決済
 upc_payment_plugin.admin.config.sub_title: プラグイン一覧
 upc_payment_plugin.admin.config.header: 設定
 upc_payment_plugin.admin.config.save: 登録
