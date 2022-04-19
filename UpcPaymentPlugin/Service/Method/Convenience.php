@@ -136,8 +136,8 @@ class Convenience implements PaymentMethodInterface
         $url .= "&siam1=" . $this->Order->getTotalPrice();
         $url .= "&em=" . $this->Order->getEmail();
         $url .= "&tn=" . $this->Order->getPhoneNumber();
-        $url .= "&cvna1=" . $this->Order->getName01();
-        $url .= "&cvna2=" . $this->Order->getName02();
+        $url .= "&cvna1=" . $this->Order->getName02();
+        $url .= "&cvna2=" . $this->Order->getName01();
         $url .= "&sucd=p_return";
 
 
