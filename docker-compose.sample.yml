@@ -1,0 +1,39 @@
+version: "3.8"
+
+services:
+  web:
+    image: ghcr.io/univapaycast/ec-cube4-for-univapay:main
+    ports:
+      - 1080:80
+    environment:
+      - APP_ENV=dev
+      - APP_DEBUG=1
+      - DATABASE_URL=postgresql://db/up?user=postgres&password=password
+      - DATABASE_SERVER_VERSION=10.18
+      - MAILER_URL=smtp://mail:1025
+      - ECCUBE_TIMEZONE=Asia/Tokyo
+      - ECCUBE_CURRENCY=JPY
+      - ECCUBE_ADMIN_USER=admin
+      - ECCUBE_ADMIN_PASS=adminAdmin
+      - ECCUBE_AUTH_MAGIC=PaVBVZkYqAjCQCu6UBL2xgsnZhw
+      - ECCUBE_ADMIN_ROUTE=admin
+      - ECCUBE_TEMPLATE_CODE=default
+      - ECCUBE_LOCALE=ja
+    volumes:
+      - "./UpcPaymentPlugin:/var/lib/nginx/html/app/Plugin/UpcPaymentPlugin"
+
+  db:
+    image: postgres:10
+    environment:
+      POSTGRES_DB: up
+      POSTGRES_PASSWORD: password
+    volumes:
+      - db:/var/lib/postgresql/data
+
+  mail:
+    image: mailhog/mailhog
+    ports:
+      - 2080:8025
+
+volumes:
+  db:

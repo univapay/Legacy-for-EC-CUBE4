@@ -1,9 +1,2 @@
-
-UpcPaymentPlugin/UpcPaymentPlugin.tar.gz
-UpcPaymentPlugin/UpcPaymentPlugin100.tar.gz
-UpcPaymentPlugin/UpcPaymentPlugin100.tar.gz
-UpcPaymentPlugin/UpcPaymentPlugin.tar
-.DS_Store
-UpcPaymentPlugin/_old_version/UpcPaymentPlugin110.tar.gz
-UpcPaymentPlugin/UpcPaymentPlugin110.tar.gz
-UpcPaymentPlugin/UpcPaymentPlugin110.tar.gz
+/docker-compose.yml
+UpcPaymentPlugin.tar.gz
