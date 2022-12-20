@@ -9,7 +9,7 @@ UnivaPay旧ペイメントゲートウェイプラグイン
 
 ## 開発環境
 
-[UpcPaymentPlugin/README.md](プラグインの実装に関するドキュメント)
+[プラグインの実装に関するドキュメント](UpcPaymentPlugin/README.md)
 
 ### 管理者向け
 
