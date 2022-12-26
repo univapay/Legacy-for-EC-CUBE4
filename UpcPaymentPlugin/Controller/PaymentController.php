@@ -166,8 +166,12 @@ class PaymentController extends AbstractController
      */
     public function complete(Request $request)
     {
+        // 受注番号を受け取る
         $orderNo = $request->get('no');
-        $Order = $this->getOrderByNo($orderNo);
+        /** @var Order $Order */
+        $Order = $this->orderRepository->findOneBy([
+            'order_no' => $orderNo,
+        ]);
 
         if (!$Order) {
             throw new NotFoundHttpException();
@@ -197,7 +201,6 @@ class PaymentController extends AbstractController
     {
         // 受注番号を受け取る
         $orderNo = $request->get('no');
-        // $Order = $this->getOrderByNo($orderNo);
         /** @var Order $Order */
         $Order = $this->orderRepository->findOneBy([
             'order_no' => $orderNo,
